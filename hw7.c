@@ -31,6 +31,7 @@
  *  ESC        Exit
  */
 #include "CSCIx229.h"
+#include <ctime>
 
 int zh=0;       // rotate around z
 int NumOfEdges=50;   //to make up tower's circles and number of teeth on tower
@@ -148,7 +149,7 @@ static void ball(double x,double y,double z,double r)
  *   for forbidden forest
  */
 
-void drawBranches(float branchLength){
+void drawBranches(float branchLength, float pointx, float pointy, float pointz){
     float white[] = {1,1,1,1};
    float black[] = {0,0,0,1};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
@@ -168,23 +169,23 @@ void drawBranches(float branchLength){
       int i=0;
       
       //y is constant when the height is same 
-      YtoLowerHeight = (Radius-1.0) / (0.0-branchLength) * (Radius-1.0);
+      YtoLowerHeight = (0.5-0.0) / (0.0-branchLength) * (0.5-0.0);
 
       for ( i = 0; i < NumOfEdges; i++)    //create a circle
       {  
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+         glTexCoord2f(x*0.5*3,z*0.5*2); glVertex3f(x*0.5,0.0,z*0.5);
          //same x,z and NVect:
-         glTexCoord2f(x*3,z*2); glVertex3f(x,branchLength,z);
+         glTexCoord2f(x*3,z*2); glVertex3f(pointx,pointy,pointz);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+      glTexCoord2f(x*0.5*3,z*0.5*2); glVertex3f(x*0.5,0.0,z*0.5);
       //same x,z and NVect:
-      glTexCoord2f(x*3,z*2); glVertex3f(x,branchLength,z);
+      glTexCoord2f(x*3,z*2); glVertex3f(pointx,pointy,pointz);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -194,7 +195,7 @@ void drawBranches(float branchLength){
 /* draw a tree
  *   for forbidden forest
  */
-void drawTree(float treeHeight, int numberOfBranches){
+void drawTree(float treeHeight){
     float white[] = {1,1,1,1};
    float black[] = {0,0,0,1};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
@@ -237,13 +238,48 @@ void drawTree(float treeHeight, int numberOfBranches){
       glDisable(GL_TEXTURE_2D);
 
       // draw braches
+      srand((unsigned)time(NULL));
+      int n = 6; // number of branches
+      float rand_height[6];
+      for (int i=0; i<n; i++)         // generate random numbers
+        rand_height[i]=rand()%treeHeight;    //make the range of random number between 0 to 32767
+
+      for (i=0; i<n; i++){
+      glPushMatrix();
+       glTranslatef(0,rand_height[i],0);
+       drawBranches(float(5/rand_height[i]), Cos((float)i/(float)6 * 360.0)*0.3, sqrt(float(5/rand_height[i])*float(5/rand_height[i])-0.3*0.3) ,Cos((float)i/(float)6 * 360.0)*0.3);
+       glPopMatrix();
+     }
 }
 
 void drawLake(){
+
   
 }
 void drawForest(int numberOfTrees){
+   float white[] = {1,1,1,1};
+   float black[] = {0,0,0,1};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
 
+    // draw lake
+   drawLake();
+    // draw trees
+      srand((unsigned)time(NULL));
+      int n = 6; // number of branches
+      for (int i=0; i<n; i++)｛         // generate random numbers
+        rand_x[i]=rand()%30+30;    //make the range of random number between 0 to 32767
+        rand_y[i]=rand()%30+30；
+      ｝
+
+      for (i=0; i<n; i++){
+      glPushMatrix();
+       glTranslatef(rand_x,0,rand_y);
+       drawTree(rand()%10+1);
+       glPopMatrix();
+
+   
 }
 
 /* draw the teeth of the wall
