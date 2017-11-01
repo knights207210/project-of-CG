@@ -144,6 +144,108 @@ static void ball(double x,double y,double z,double r)
    glPopMatrix();
 }
 
+/* draw branches
+ *   for forbidden forest
+ */
+
+void drawBranches(float branchLength){
+    float white[] = {1,1,1,1};
+   float black[] = {0,0,0,1};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+
+   float x,z;
+   float YtoLowerHeight;  //y component for the NVects of the higher part
+   
+   glPushMatrix();
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(0.683,0.930,0.930);
+   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   glBegin(GL_QUAD_STRIP);
+      //Create the lower part of the tower:
+      int i=0;
+      
+      //y is constant when the height is same 
+      YtoLowerHeight = (Radius-1.0) / (0.0-branchLength) * (Radius-1.0);
+
+      for ( i = 0; i < NumOfEdges; i++)    //create a circle
+      {  
+         x = Cos((float)i/(float)NumOfEdges * 360.0);
+         z = Sin((float)i/(float)NumOfEdges * 360.0);
+         glNormal3f(x,YtoLowerHeight,z);
+         glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+         //same x,z and NVect:
+         glTexCoord2f(x*3,z*2); glVertex3f(x,branchLength,z);
+      }
+     x = Cos((float)i/(float)NumOfEdges * 360.0);
+      z = Sin((float)i/(float)NumOfEdges * 360.0);
+      glNormal3f(x,YtoLowerHeight,z);
+      glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+      //same x,z and NVect:
+      glTexCoord2f(x*3,z*2); glVertex3f(x,branchLength,z);
+      glColor3f(1.0,1.0,1.0);
+      glEnd();
+      glPopMatrix();
+      glDisable(GL_TEXTURE_2D);
+}
+
+/* draw a tree
+ *   for forbidden forest
+ */
+void drawTree(float treeHeight, int numberOfBranches){
+    float white[] = {1,1,1,1};
+   float black[] = {0,0,0,1};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+
+   float x,z;
+   float YtoLowerHeight;  //y component for the NVects of the higher part
+   
+   glPushMatrix();
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(0.683,0.930,0.930);
+   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   glBegin(GL_QUAD_STRIP);
+      //Create the lower part of the tower:
+      int i=0;
+      
+      //y is constant when the height is same 
+      YtoLowerHeight = (Radius-1.0) / (0.0-treeHeight) * (Radius-1.0);
+
+      for ( i = 0; i < NumOfEdges; i++)    //create a circle
+      {  
+         x = Cos((float)i/(float)NumOfEdges * 360.0);
+         z = Sin((float)i/(float)NumOfEdges * 360.0);
+         glNormal3f(x,YtoLowerHeight,z);
+         glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+         //same x,z and NVect:
+         glTexCoord2f(x*3,z*2); glVertex3f(x,treeHeight,z);
+      }
+     x = Cos((float)i/(float)NumOfEdges * 360.0);
+      z = Sin((float)i/(float)NumOfEdges * 360.0);
+      glNormal3f(x,YtoLowerHeight,z);
+      glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+      //same x,z and NVect:
+      glTexCoord2f(x*3,z*2); glVertex3f(x,treeHeight,z);
+      glColor3f(1.0,1.0,1.0);
+      glEnd();
+      glPopMatrix();
+      glDisable(GL_TEXTURE_2D);
+
+      // draw braches
+}
+
+void drawLake(){
+  
+}
+void drawForest(int numberOfTrees){
+
+}
+
 /* draw the teeth of the wall
  *         the amount of teeth is TeethNumber
  */
