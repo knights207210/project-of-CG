@@ -31,7 +31,6 @@
  *  ESC        Exit
  */
 #include "CSCIx229.h"
-#include <ctime>
 
 int zh=0;       // rotate around z
 int NumOfEdges=50;   //to make up tower's circles and number of teeth on tower
@@ -195,7 +194,7 @@ void drawBranches(float branchLength, float pointx, float pointy, float pointz){
 /* draw a tree
  *   for forbidden forest
  */
-void drawTree(float treeHeight){
+void drawTree(int treeHeight, float r){
     float white[] = {1,1,1,1};
    float black[] = {0,0,0,1};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
@@ -215,21 +214,21 @@ void drawTree(float treeHeight){
       int i=0;
       
       //y is constant when the height is same 
-      YtoLowerHeight = (Radius-1.0) / (0.0-treeHeight) * (Radius-1.0);
+      YtoLowerHeight = (r-1.0) / (0.0-treeHeight) * (r-1.0);
 
       for ( i = 0; i < NumOfEdges; i++)    //create a circle
       {  
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+         glTexCoord2f(x*r*3,z*r*2); glVertex3f(x*r,0.0,z*r);
          //same x,z and NVect:
          glTexCoord2f(x*3,z*2); glVertex3f(x,treeHeight,z);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
+      glTexCoord2f(x*r*3,z*r*2); glVertex3f(x*r,0.0,z*r);
       //same x,z and NVect:
       glTexCoord2f(x*3,z*2); glVertex3f(x,treeHeight,z);
       glColor3f(1.0,1.0,1.0);
@@ -238,17 +237,20 @@ void drawTree(float treeHeight){
       glDisable(GL_TEXTURE_2D);
 
       // draw braches
-      srand((unsigned)time(NULL));
+      //srand((unsigned)time(NULL));
       int n = 6; // number of branches
-      float rand_height[6];
+      int rand_height[6];
       for (int i=0; i<n; i++)         // generate random numbers
-        rand_height[i]=rand()%treeHeight;    //make the range of random number between 0 to 32767
+        rand_height[i]=(float)treeHeight/(float)(n+1)*(float)i;    //make the range of random number between 0 to 32767
+      
 
-      for (i=0; i<n; i++){
+      for (int j=0; j<n; j++){
       glPushMatrix();
-       glTranslatef(0,rand_height[i],0);
-       drawBranches(float(5/rand_height[i]), Cos((float)i/(float)6 * 360.0)*0.3, sqrt(float(5/rand_height[i])*float(5/rand_height[i])-0.3*0.3) ,Cos((float)i/(float)6 * 360.0)*0.3);
+       glTranslatef(0,rand_height[j],0);
+       drawBranches(4, Cos((float)j/(float)n * 360.0)*3, sqrt(16-9) ,Sin((float)j/(float)n * 360.0)*3);
        glPopMatrix();
+
+       
      }
 }
 
@@ -256,7 +258,7 @@ void drawLake(){
 
   
 }
-void drawForest(int numberOfTrees){
+/*void drawForest(int numberOfTrees){
    float white[] = {1,1,1,1};
    float black[] = {0,0,0,1};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
@@ -266,21 +268,22 @@ void drawForest(int numberOfTrees){
     // draw lake
    drawLake();
     // draw trees
-      srand((unsigned)time(NULL));
-      int n = 6; // number of branches
-      for (int i=0; i<n; i++)｛         // generate random numbers
+      //srand((unsigned)time(NULL));
+      int rand_x[numberOfTrees], rand_y[numberOfTrees];
+      for (int i=0; i<numberOfTrees; i++){         // generate random numbers
         rand_x[i]=rand()%30+30;    //make the range of random number between 0 to 32767
-        rand_y[i]=rand()%30+30；
-      ｝
+        rand_y[i]=rand()%30+30;
+      }
 
-      for (i=0; i<n; i++){
+      for (int j=0; j<numberOfTrees; j++){
       glPushMatrix();
-       glTranslatef(rand_x,0,rand_y);
+       glTranslatef((float)rand_x[j],0.0,(float)rand_y[j]);
        drawTree(rand()%10+1);
        glPopMatrix();
+     }
 
    
-}
+}*/
 
 /* draw the teeth of the wall
  *         the amount of teeth is TeethNumber
@@ -1620,7 +1623,8 @@ void display()
    //  Draw scene
 
  glScalef(scale,scale,scale);
- glPushMatrix();
+ drawTree(10,1.5);
+ /*glPushMatrix();
  glTranslatef(-1.0,0.0,0.0);
  drawGate();
  glTranslatef(7.5,0.0,0.0);
@@ -1765,6 +1769,7 @@ glPushMatrix();
    glTranslatef(-15.0,0.0,-15.0);
    drawGround();
    glPopMatrix();
+   */
    
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
