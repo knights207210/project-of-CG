@@ -83,6 +83,7 @@ int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh_l        =  90;  // Light azimuth
 float ylight  =   0;  // Elevation of light
+int numberOfTrees = 30;
 
 unsigned int texture[10];  //texture names
 
@@ -194,7 +195,7 @@ void drawBranches(float branchLength, float pointx, float pointy, float pointz){
 /* draw a tree
  *   for forbidden forest
  */
-void drawTree(int treeHeight, float r){
+void drawTree(int treeHeight, float r1, float r2){
     float white[] = {1,1,1,1};
    float black[] = {0,0,0,1};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
@@ -214,23 +215,23 @@ void drawTree(int treeHeight, float r){
       int i=0;
       
       //y is constant when the height is same 
-      YtoLowerHeight = (r-1.0) / (0.0-treeHeight) * (r-1.0);
+      YtoLowerHeight = (r1-r2) / (0.0-treeHeight) * (r1-r2);
 
       for ( i = 0; i < NumOfEdges; i++)    //create a circle
       {  
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*r*3,z*r*2); glVertex3f(x*r,0.0,z*r);
+         glTexCoord2f(x*r1*3,z*r1*2); glVertex3f(x*r1,0.0,z*r1);
          //same x,z and NVect:
-         glTexCoord2f(x*3,z*2); glVertex3f(x,treeHeight,z);
+         glTexCoord2f(x*r2*3,z*r2*2); glVertex3f(x*r2,treeHeight,z*r2);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*r*3,z*r*2); glVertex3f(x*r,0.0,z*r);
+      glTexCoord2f(x*r1*3,z*r1*2); glVertex3f(x*r1,0.0,z*r1);
       //same x,z and NVect:
-      glTexCoord2f(x*3,z*2); glVertex3f(x,treeHeight,z);
+      glTexCoord2f(x*r2*3,z*r2*2); glVertex3f(x*r2,treeHeight,z*r2);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -247,10 +248,44 @@ void drawTree(int treeHeight, float r){
       for (int j=0; j<n; j++){
       glPushMatrix();
        glTranslatef(0,rand_height[j],0);
-       drawBranches(4, Cos((float)j/(float)n * 360.0)*3, sqrt(16-9) ,Sin((float)j/(float)n * 360.0)*3);
+       glScalef(1-0.02*n,1-0.02*n,1-0.02*n);
+       drawBranches(3, Cos((float)j/(float)n * 360.0)*2, sqrt(9-4) ,Sin((float)j/(float)n * 360.0)*2);
        glPopMatrix();
 
-       
+       //draw the higher part of the tree
+       glPushMatrix();
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(0.683,0.930,0.930);
+   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   glBegin(GL_QUAD_STRIP);
+      //Create the lower part of the tower:
+      int i=0;
+      
+      //y is constant when the height is same 
+      YtoLowerHeight = (r2-0.0) / (0.0-treeHeight*0.1) * (r2-0.0);
+
+      for ( i = 0; i < NumOfEdges; i++)    //create a circle
+      {  
+         x = Cos((float)i/(float)NumOfEdges * 360.0);
+         z = Sin((float)i/(float)NumOfEdges * 360.0);
+         glNormal3f(x,YtoLowerHeight,z);
+         glTexCoord2f(x*r2*3,z*r2*2); glVertex3f(x*r2,treeHeight,z*r2);
+         //same x,z and NVect:
+         glTexCoord2f(x*3,z*2); glVertex3f(0,treeHeight+treeHeight*0.1,0);
+      }
+     x = Cos((float)i/(float)NumOfEdges * 360.0);
+      z = Sin((float)i/(float)NumOfEdges * 360.0);
+      glNormal3f(x,YtoLowerHeight,z);
+      glTexCoord2f(x*r*3,z*r*2); glVertex3f(x*r2,treeHeight,z*r2);
+      //same x,z and NVect:
+      glTexCoord2f(x*3,z*2); glVertex3f(0,treeHeight+treeHeight*0.1,0);
+      glColor3f(1.0,1.0,1.0);
+      glEnd();
+      glPopMatrix();
+      glDisable(GL_TEXTURE_2D);
+
+
      }
 }
 
@@ -258,32 +293,57 @@ void drawLake(){
 
   
 }
-/*void drawForest(int numberOfTrees){
+void drawForest(int numberOfTrees){
    float white[] = {1,1,1,1};
    float black[] = {0,0,0,1};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-
-    // draw lake
-   drawLake();
     // draw trees
       //srand((unsigned)time(NULL));
-      int rand_x[numberOfTrees], rand_y[numberOfTrees];
-      for (int i=0; i<numberOfTrees; i++){         // generate random numbers
-        rand_x[i]=rand()%30+30;    //make the range of random number between 0 to 32767
-        rand_y[i]=rand()%30+30;
-      }
+   int rand_x[numberOfTrees], rand_y[numberOfTrees];
+   rand_x[0] = 7; rand_y[0] = -9;
+   rand_x[1] = -3; rand_y[1] = 8;
+   rand_x[2] = -0; rand_y[2] = -2;
+   rand_x[3] = 4; rand_y[3] = 8;
+   rand_x[4] = 3; rand_y[4] = 9;
+   rand_x[5] = 0; rand_y[5] = 5;
+   rand_x[6] = 2; rand_y[6] = 2;
+   rand_x[7] = 7; rand_y[7] = 3;
+   rand_x[8] = -7;rand_y[8] = -9;
+   rand_x[9] = 0; rand_y[9] = 7;
+   rand_x[10] = -3; rand_y[10] = 3;
+   rand_x[11] = -9; rand_y[11] = 8;
+   rand_x[12] = 0; rand_y[12] = 5;
+   rand_x[13] = 9; rand_y[13] = 6;
+   rand_x[14] = -6; rand_y[14] = 7;
+   rand_x[15] = 1; rand_y[15] = 3;
+   rand_x[16] = 0; rand_y[16] = 9;
+   rand_x[17] = -5; rand_y[17] = -1;
+   rand_x[18] = 2; rand_y[18] = 2;
+   rand_x[19] = 6; rand_y[19] = 6;
+   rand_x[20] = 9; rand_y[20] = 9;
+   rand_x[21] = -4; rand_y[21] = -9;
+   rand_x[22] = 5; rand_y[22] = 7;
+   rand_x[23] = 7; rand_y[23] = -5;
+   rand_x[24] = 1; rand_y[24] = 3;
+   rand_x[25] = 9; rand_y[25] = 0;
+   rand_x[26] = 5; rand_y[26] = -7;
+   rand_x[27] = -7; rand_y[27] = 8;
+   rand_x[28] = 6; rand_y[28] = 1;
+   rand_x[29] = 3; rand_y[29] = -4;
+
+
 
       for (int j=0; j<numberOfTrees; j++){
       glPushMatrix();
-       glTranslatef((float)rand_x[j],0.0,(float)rand_y[j]);
-       drawTree(rand()%10+1);
+       glTranslatef((float)(rand_x[j]),0.0,(float)(rand_y[j]));
+       drawTree(rand_x[j]%4+10,1,0.5);
        glPopMatrix();
      }
 
    
-}*/
+}
 
 /* draw the teeth of the wall
  *         the amount of teeth is TeethNumber
@@ -1623,7 +1683,32 @@ void display()
    //  Draw scene
 
  glScalef(scale,scale,scale);
- drawTree(10,1.5);
+
+ glPushMatrix();
+ glTranslatef(0.0,0.0,0.0);
+ drawForest(numberOfTrees);
+ glPopMatrix();
+
+ glPushMatrix();
+ glTranslatef(10.0,0.0,0.0);
+ drawForest(numberOfTrees);
+ glPopMatrix();
+
+ glPushMatrix();
+ glTranslatef(10.0,0.0,10.0);
+ drawForest(numberOfTrees);
+ glPopMatrix();
+
+ glPushMatrix();
+ glTranslatef(0.0,0.0,10.0);
+ drawForest(numberOfTrees);
+ glPopMatrix();
+
+ glPushMatrix();
+ glTranslatef(0.0,0.0,10.0);
+ drawLake();
+ glPopMatrix();
+
  /*glPushMatrix();
  glTranslatef(-1.0,0.0,0.0);
  drawGate();
