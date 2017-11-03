@@ -193,8 +193,8 @@ void drawCourtTower(){
    glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(3.5/4,0);glVertex3f(0.0,0.0,2.0);
    glTexCoord2f(4.5/4,0);glVertex3f(0.0,0.0,0.0);
-   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(0.0,12.0,2.0);
-   glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(0.0,12.0,0.0);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(0.0,12.0,0.0);
+   glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(0.0,12.0,2.0);
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
@@ -327,6 +327,7 @@ void drawCourtTower(){
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
    glColor3f(0.683,0.930,0.930);
    glBindTexture(GL_TEXTURE_2D,texture[2]);
+   
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
       int i=0;
@@ -354,17 +355,228 @@ void drawCourtTower(){
       glEnd();
       glPopMatrix();
       glDisable(GL_TEXTURE_2D);
+}
+
+/*
+r = torus ring radius
+c = torus tube radius
+rSeg, cSeg = number of segments/detail
+*/
+
+void drawTorus(double r, double c,int rSeg, int cSeg)
+{
+   float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+  glFrontFace(GL_CW);
+
+  glPushMatrix();
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, texture[1]);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+  const double PI = 3.1415926535897932384626433832795;
+  const double TAU = 2 * PI;
+
+  for (int i = 0; i < rSeg; i++) {
+    glBegin(GL_QUAD_STRIP);
+    for (int j = 0; j <= cSeg; j++) {
+      for (int k = 0; k <= 1; k++) {
+        double s = (i + k) % rSeg + 0.5;
+        double t = j % (cSeg + 1);
+
+        double x = (c + r * cos(s * TAU / rSeg)) * cos(t * TAU / cSeg);
+        double y = (c + r * cos(s * TAU / rSeg)) * sin(t * TAU / cSeg);
+        double z = r * sin(s * TAU / rSeg);
+
+        double u = (i + k) / (float) rSeg;
+        double v = t / (float) cSeg;
+
+        glTexCoord2d(u, v);
+        glNormal3f(2 * x, 2 * y, 2 * z);
+        glVertex3d(2 * x, 2 * y, 2 * z);
+      }
+    }
+    glEnd();
+  }
+
+  glFrontFace(GL_CCW);
+  glPopMatrix();
+  glDisable(GL_TEXTURE_2D);
+}
 
 
-
-
-
-   
-   
+void drawCourtGate(){
+    float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
   
+
+   glPushMatrix();
+      glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(0.688,0.766,0.867);
+   glBindTexture(GL_TEXTURE_2D,texture[3]);
+   glBegin(GL_QUAD_STRIP);
+   int i;
+   float x,z;
+      for ( i = 0; i < NumOfEdges; i++)
+      {  
+         x = Cos((float)i/(float)NumOfEdges*360);
+         z = Sin((float)i/(float)NumOfEdges*360);
+         glNormal3f(x,0.0,z);
+         glTexCoord2f((float)i/(float)NumOfEdges*2,LowerHeight/4); glVertex3f(x*0.1,0.0,z*0.1);
+         glTexCoord2f((float)i/(float)NumOfEdges*2,HigherHeight/4); glVertex3f(x*0.1,HigherHeight,z*0.1);
+      }
+      x = Cos((float)i/(float)NumOfEdges*360);
+      z = Sin((float)i/(float)NumOfEdges*360);
+      glNormal3f(x,0.0,z);
+      glTexCoord2f((float)i/(float)NumOfEdges*2,LowerHeight/4); glVertex3f(x*0.1,0.0,z*0.1);
+      glTexCoord2f((float)i/(float)NumOfEdges*2,HigherHeight/4); glVertex3f(x*0.1,HigherHeight,z*0.1);
+      glEnd();
+      glPopMatrix();
+      glDisable(GL_TEXTURE_2D);
+
+      glPushMatrix();
+      glTranslatef(0.0,HigherHeight,0.0);
+      drawTorus(0.07,0.15,16,8);
+      glPopMatrix();
 
 }
 void drawCourt(){
+
+
+  float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+  
+
+   glPushMatrix();
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(0.867,0.719,0.527);
+   glBindTexture(GL_TEXTURE_2D,texture[3]);
+   glScalef(0.5,0.0,1.0);
+   //draw the ground
+      glBegin(GL_TRIANGLES);
+      int i;
+      float x,z;
+      for ( i = 0; i < NumOfEdges-1; i++)
+      {  
+         x = Cos((float)i/(float)NumOfEdges * 360.0);
+         z = Sin((float)i/(float)NumOfEdges * 360.0);
+         glNormal3f(0.0,-1.0,0.0);
+         glVertex3f(0.0,0.0,0.0);
+         glVertex3f(x*20,0.0,z*20);
+
+         x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
+         z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
+         glNormal3f(0.0,-1.0,0.0);
+         glVertex3f(x*20,0.0,z*20);
+      }
+      x = Cos((float)i/(float)NumOfEdges * 360.0);
+      z = Sin((float)i/(float)NumOfEdges * 360.0);
+      glNormal3f(0.0,-1.0,0.0);
+      glVertex3f(0.0,0.0,0.0);
+      glVertex3f(x*20,0.0,z*20);
+      x = Cos(1.0/(float)NumOfEdges * 360.0);
+      z = Sin(1.0/(float)NumOfEdges * 360.0);
+      glNormal3f(0.0,-1.0,0.0);
+      glVertex3f(x*20,0.0,z*20);
+      glEnd();
+      glPopMatrix();
+      glDisable(GL_TEXTURE_2D);
+
+      //draw court tower
+      glPushMatrix();
+      glTranslatef(10.0,0.0,0.0);
+      glRotatef(270,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(-10.0,0.0,1.5);
+      glRotatef(90,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(1.5,0.0,20.0);
+      glRotatef(180,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(0.0,0.0,-20.0);
+      glRotatef(0,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(7.0,0.0,15.0);
+      glRotatef(210,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(-7.0,0.0,-14.5);
+      glRotatef(20,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(6.3,0.0,-15.0);
+      glRotatef(-40,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(-5.9,0.0,15.8);
+      glRotatef(140,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(9.5,0.0,7.5);
+      glRotatef(220,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(-9.5,0.0,-7.5);
+      glRotatef(50,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(8.8,0.0,-7.5);
+      glRotatef(-50,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslatef(-8.5,0.0,8.4);
+      glRotatef(-220,0,1,0);
+      glScalef(0.8,0.8,0.8);
+      drawCourtTower();
+      glPopMatrix();
 
 }
 /* draw branches
@@ -1905,7 +2117,7 @@ void display()
    //  Draw scene
 
  glScalef(scale,scale,scale);
- drawCourtTower();
+ drawCourtGate();
 
  //draw forest
  /*glPushMatrix();
