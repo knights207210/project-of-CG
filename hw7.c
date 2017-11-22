@@ -46,6 +46,8 @@ float scale=0.2;
 float r=0.0;    
 int plane=1; 
 float speed=0.5;
+int    sky[2];   //  Sky textures
+int box=1;
 
 //initialized point view
 
@@ -143,6 +145,104 @@ static void ball(double x,double y,double z,double r)
    }
    //  Undo transofrmations
    glPopMatrix();
+}
+
+/* 
+ *  Draw sky box
+ */
+static void Sky(double D)
+{
+   glColor3f(1,1,1);
+   glEnable(GL_TEXTURE_2D);
+
+   //  Sides
+   glBindTexture(GL_TEXTURE_2D,sky[0]);
+   glBegin(GL_QUADS);
+   glTexCoord2f(0.00,0.45); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(0.25,0.45); glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.25,0.62); glVertex3f(+D,+D,-D);
+   glTexCoord2f(0.00,0.62); glVertex3f(-D,+D,-D);
+
+   glTexCoord2f(0.25,0.45); glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.50,0.45); glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.50,0.62); glVertex3f(+D,+D,+D);
+   glTexCoord2f(0.25,0.62); glVertex3f(+D,+D,-D);
+
+   glTexCoord2f(0.50,0.45); glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.75,0.45); glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(0.75,0.62); glVertex3f(-D,+D,+D);
+   glTexCoord2f(0.50,0.62); glVertex3f(+D,+D,+D);
+
+   glTexCoord2f(0.75,0.45); glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(1.00,0.45); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(1.00,0.62); glVertex3f(-D,+D,-D);
+   glTexCoord2f(0.75,0.62); glVertex3f(-D,+D,+D);
+   glEnd();
+
+   //  Top and bottom
+   //glBindTexture(GL_TEXTURE_2D,sky[1]);
+   glBegin(GL_QUADS);
+   glTexCoord2f(0.25,0.62);glVertex3f(+D,+D,-D);
+   glTexCoord2f(0.5,0.62);glVertex3f(+D,+D,+D);
+   glTexCoord2f(0.5,0.87);glVertex3f(-D,+D,+D);
+   glTexCoord2f(0.25,0.87);glVertex3f(-D,+D,-D);
+
+   glTexCoord2f(0.5,0.12);glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(0.5,0.37);glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.25,0.12);glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.25,0.37); glVertex3f(-D,-0.2,-D);
+   glEnd();
+
+   glDisable(GL_TEXTURE_2D);
+}
+
+/* 
+ *  Draw sky box
+ */
+static void Sky1(double D)
+{
+   glColor3f(1,1,1);
+   glEnable(GL_TEXTURE_2D);
+
+   //  Sides
+   glBindTexture(GL_TEXTURE_2D,sky[1]);
+   glBegin(GL_QUADS);
+   glTexCoord2f(0.00,0.37); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(0.255,0.37); glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.255,0.615); glVertex3f(+D,+D,-D);
+   glTexCoord2f(0.00,0.615); glVertex3f(-D,+D,-D);
+
+   glTexCoord2f(0.255,0.37); glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.495,0.37); glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.495,0.615); glVertex3f(+D,+D,+D);
+   glTexCoord2f(0.255,0.615); glVertex3f(+D,+D,-D);
+
+   glTexCoord2f(0.495,0.37); glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.75,0.37); glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(0.75,0.615); glVertex3f(-D,+D,+D);
+   glTexCoord2f(0.495,0.615); glVertex3f(+D,+D,+D);
+
+   glTexCoord2f(0.75,0.37); glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(1.00,0.37); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(1.00,0.615); glVertex3f(-D,+D,-D);
+   glTexCoord2f(0.75,0.615); glVertex3f(-D,+D,+D);
+   glEnd();
+
+   //  Top and bottom
+   //glBindTexture(GL_TEXTURE_2D,sky[1]);
+   glBegin(GL_QUADS);
+   glTexCoord2f(0.255,0.615);glVertex3f(+D,+D,-D);
+   glTexCoord2f(0.495,0.615);glVertex3f(+D,+D,+D);
+   glTexCoord2f(0.495,0.87);glVertex3f(-D,+D,+D);
+   glTexCoord2f(0.255,0.87);glVertex3f(-D,+D,-D);
+
+   glTexCoord2f(0.495,0.125);glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(0.495,0.37);glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.255,0.125);glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.255,0.37); glVertex3f(-D,-0.2,-D);
+   glEnd();
+
+   glDisable(GL_TEXTURE_2D);
 }
 
 void drawCourtTower(){
@@ -2091,7 +2191,9 @@ void drawflag(){
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
 
+   glLineWidth(1);
    glBegin(GL_LINES);
+
    
    glColor3f(0.543,0.270,0.074);
    glVertex3f(0.0,15.0,0.0);
@@ -2233,6 +2335,10 @@ void display()
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
 
+   if(box) 
+    Sky(3.5*dim);
+   else
+    Sky1(3.5*dim);
    //  Light switch
    if (light)
    {
@@ -2281,35 +2387,39 @@ void display()
    //  Draw scene
 
  glScalef(scale,scale,scale);
+ glPushMatrix();
+ glScalef(0.8,0.8,0.8);
+ glTranslatef(40.0,0.0,-5.0);
  drawCourt();
+ glPopMatrix();
 
  //draw forest
- /*glPushMatrix();
- glTranslatef(0.0,0.0,0.0);
+ glPushMatrix();
+ glTranslatef(25.0,0.0,25.0);
  drawForest(numberOfTrees);
  glPopMatrix();
 
  glPushMatrix();
- glTranslatef(10.0,0.0,0.0);
+ glTranslatef(35.0,0.0,25.0);
  drawForest(numberOfTrees);
  glPopMatrix();
 
  glPushMatrix();
- glTranslatef(10.0,0.0,10.0);
+ glTranslatef(35.0,0.0,35.0);
  drawForest(numberOfTrees);
  glPopMatrix();
 
  glPushMatrix();
- glTranslatef(0.0,0.0,10.0);
+ glTranslatef(25.0,0.0,35.0);
  drawForest(numberOfTrees);
  glPopMatrix();
 
  glPushMatrix();
  glTranslatef(0.0,0.0,10.0);
  drawLake();
- glPopMatrix();*/
+ glPopMatrix();
 
- /*glPushMatrix();
+ glPushMatrix();
  glTranslatef(-1.0,0.0,0.0);
  drawGate();
  glTranslatef(7.5,0.0,0.0);
@@ -2454,7 +2564,7 @@ glPushMatrix();
    glTranslatef(-15.0,0.0,-15.0);
    drawGround();
    glPopMatrix();
-   */
+   
    
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
@@ -2711,6 +2821,9 @@ int main(int argc,char* argv[])
    texture[7] = LoadTexBMP("8.bmp");
    texture[8] = LoadTexBMP("9.bmp");
    texture[9] = LoadTexBMP("10.bmp");
+   sky[0] = LoadTexBMP("sky0.bmp");
+   sky[1] = LoadTexBMP("sky1.bmp");
+
    ErrCheck("init");
    glutMainLoop();
    return 0;
