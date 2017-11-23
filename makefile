@@ -23,7 +23,7 @@ CLEAN=rm -f $(EXE) *.o *.a
 endif
 
 # Dependencies
-hw7.o: hw7.c CSCIx229.h
+hw7.o: hw7.cpp CSCIx229.h
 fatal.o: fatal.c CSCIx229.h
 loadtexbmp.o: loadtexbmp.c CSCIx229.h
 print.o: print.c CSCIx229.h
@@ -43,7 +43,7 @@ CSCIx229.a:fatal.o loadtexbmp.o print.o project.o errcheck.o object.o
 
 #  Link
 hw7:hw7.o CSCIx229.a
-	gcc -O3 -o $@ $^   $(LIBS)
+	g++ -O3 -o $@ $^   $(LIBS)
 
 #  Clean
 clean:

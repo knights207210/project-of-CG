@@ -31,6 +31,14 @@
  *  ESC        Exit
  */
 #include "CSCIx229.h"
+#define PI 3.14159265359
+#define NUM_X_OSCILLATORS   150
+#define NUM_Z_OSCILLATORS   150
+#define NUM_OSCILLATORS     NUM_X_OSCILLATORS*NUM_Z_OSCILLATORS
+#define OSCILLATOR_DISTANCE   0.05
+
+#define OSCILLATOR_WEIGHT       0.0002
+
 
 int zh=0;       // rotate around z
 int NumOfEdges=50;   //to make up tower's circles and number of teeth on tower
@@ -88,6 +96,272 @@ float ylight  =   0;  // Elevation of light
 int numberOfTrees = 30;
 
 unsigned int texture[10];  //texture names
+
+struct SOscillator
+{
+  GLfloat x,y,z;
+  GLfloat nx,ny,nz;  //normal vector
+  GLfloat UpSpeed;
+  GLfloat newY;
+  bool bIsExciter;
+  //only in use, if bIsExciter is true:
+  float ExciterAmplitude;  
+  float ExciterFrequency;
+};
+//vertex data for the waves:
+SOscillator * Oscillators;
+int NumOscillators;  //size of the vertex array
+std::vector <GLuint> IndexVect;  //we first put the indices into this vector, then copy them to the array below
+GLuint * Indices;
+int NumIndices;   //size of the index array
+
+float g_timePassedSinceStart = 0.0f;  //note: this need not be the real time
+bool  g_bExcitersInUse = true;
+
+
+SF3dVector F3dVector ( GLfloat x, GLfloat y, GLfloat z )
+{
+  SF3dVector tmp;
+  tmp.x = x;
+  tmp.y = y;
+  tmp.z = z;
+  return tmp;
+}
+SF3dVector AddF3dVectors (SF3dVector* u, SF3dVector* v)
+{
+  SF3dVector result;
+  result.x = u->x + v->x;
+  result.y = u->y + v->y;
+  result.z = u->z + v->z;
+  return result;
+}
+void AddF3dVectorToVector ( SF3dVector * Dst, SF3dVector * V2)
+{
+  Dst->x += V2->x;
+  Dst->y += V2->y;
+  Dst->z += V2->z;
+}
+
+GLfloat GetF3dVectorLength( SF3dVector * v)
+{
+  return (GLfloat)(sqrt(v->x*v->x+v->y*v->y+v->z*v->z));  
+}
+SF3dVector CrossProduct (SF3dVector * u, SF3dVector * v)
+{
+  SF3dVector resVector;
+  resVector.x = u->y*v->z - u->z*v->y;
+  resVector.y = u->z*v->x - u->x*v->z;
+  resVector.z = u->x*v->y - u->y*v->x;
+  return resVector;
+}
+SF3dVector Normalize3dVector( SF3dVector v)
+{
+  SF3dVector res;
+  float l = GetF3dVectorLength(&v);
+  if (l == 0.0f) return F3dVector(0.0f,0.0f,0.0f);
+  res.x = v.x / l;
+  res.y = v.y / l;
+  res.z = v.z / l;
+  return res;
+}
+SF3dVector operator+ (SF3dVector v, SF3dVector u)
+{
+  SF3dVector res;
+  res.x = v.x+u.x;
+  res.y = v.y+u.y;
+  res.z = v.z+u.z;
+  return res;
+}
+SF3dVector operator- (SF3dVector v, SF3dVector u)
+{
+  SF3dVector res;
+  res.x = v.x-u.x;
+  res.y = v.y-u.y;
+  res.z = v.z-u.z;
+  return res;
+}
+///////////////////////////////////////////////////
+
+
+void CreatePool()
+{
+  
+  NumOscillators = NUM_OSCILLATORS;
+  Oscillators = new SOscillator[NumOscillators];
+  IndexVect.clear();  //to be sure it is empty
+  for (int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
+    for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
+    {
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].x = OSCILLATOR_DISTANCE*float(xc);
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].y = 0.0f;
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].z = OSCILLATOR_DISTANCE*float(zc);
+
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].nx = 0.0f;
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].ny = 1.0f;
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].nz = 0.0f;
+
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].UpSpeed = 0;
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].bIsExciter = false;
+
+      //create two triangles:
+      if ((xc < NUM_X_OSCILLATORS-1) && (zc < NUM_Z_OSCILLATORS-1))
+      {
+        IndexVect.push_back(xc+zc*NUM_X_OSCILLATORS);
+        IndexVect.push_back((xc+1)+zc*NUM_X_OSCILLATORS);
+        IndexVect.push_back((xc+1)+(zc+1)*NUM_X_OSCILLATORS);
+
+        IndexVect.push_back(xc+zc*NUM_X_OSCILLATORS);
+        IndexVect.push_back((xc+1)+(zc+1)*NUM_X_OSCILLATORS);
+        IndexVect.push_back(xc+(zc+1)*NUM_X_OSCILLATORS);
+      }
+
+    }
+
+  //copy the indices:
+  Indices = new GLuint[IndexVect.size()];  //allocate the required memory
+  for (int i = 0; i < IndexVect.size(); i++)
+  {
+    Indices[i] = IndexVect[i];
+  }
+
+  Oscillators[100+30*NUM_X_OSCILLATORS].bIsExciter = true;
+  Oscillators[100+30*NUM_X_OSCILLATORS].ExciterAmplitude = 0.5f;
+  Oscillators[100+30*NUM_X_OSCILLATORS].ExciterFrequency = 50.0f;
+  Oscillators[30+80*NUM_X_OSCILLATORS].bIsExciter = true;
+  Oscillators[30+80*NUM_X_OSCILLATORS].ExciterAmplitude = 0.5f;
+  Oscillators[30+80*NUM_X_OSCILLATORS].ExciterFrequency = 50.0f;
+  NumIndices = IndexVect.size();
+  IndexVect.clear();  //no longer needed, takes only memory
+}
+
+
+void UpdateScene(bool bEndIsFree, float deltaTime, float time)
+{
+//********
+// Here we do the physical calculations: 
+// The oscillators are moved according to their neighbors.
+// The parameter bEndIsFree indicates, whether the oscillators in the edges can move or not.
+// The new position may be assigned not before all calculations are done!
+
+// PLEASE NOTE: THESE ARE APPROXIMATIONS AND I KNOW THIS! (but is looks good, doesn't it?)
+
+  //if we use two loops, it is a bit easier to understand what I do here.
+  for (int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
+  {
+    for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
+    {
+      int ArrayPos = xc+zc*NUM_X_OSCILLATORS;
+
+      //check, if oscillator is an exciter (these are not affected by other oscillators)
+      if ((Oscillators[ArrayPos].bIsExciter) && g_bExcitersInUse)
+      {
+        Oscillators[ArrayPos].newY = Oscillators[ArrayPos].ExciterAmplitude*sin(time*Oscillators[ArrayPos].ExciterFrequency);
+      }
+
+
+      //check, if this oscillator is on an edge (=>end)
+      if ((xc==0) || (xc==NUM_X_OSCILLATORS-1) || (zc==0) || (zc==NUM_Z_OSCILLATORS-1))
+        ;//TBD: calculating oscillators at the edge (if the end is free)
+      else
+      {
+        //calculate the new speed:
+        
+
+        //Change the speed (=accelerate) according to the oscillator's 4 direct neighbors:
+        float AvgDifference = Oscillators[ArrayPos-1].y       //left neighbor
+                   +Oscillators[ArrayPos+1].y       //right neighbor
+                   +Oscillators[ArrayPos-NUM_X_OSCILLATORS].y  //upper neighbor
+                   +Oscillators[ArrayPos+NUM_X_OSCILLATORS].y  //lower neighbor
+                   -4*Oscillators[ArrayPos].y;        //subtract the pos of the current osc. 4 times  
+        Oscillators[ArrayPos].UpSpeed += AvgDifference*deltaTime/OSCILLATOR_WEIGHT;
+
+        //calculate the new position, but do not yet store it in "y" (this would affect the calculation of the other osc.s)
+        Oscillators[ArrayPos].newY += Oscillators[ArrayPos].UpSpeed*deltaTime;
+        
+        
+        
+      }
+    }   
+  }
+
+  //copy the new position to y:
+  for ( int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
+  {
+    for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
+    {
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].y =Oscillators[xc+zc*NUM_X_OSCILLATORS].newY;
+    }
+  }
+  //calculate new normal vectors (according to the oscillator's neighbors):
+  for ( int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
+  {
+    for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
+    {
+      ///
+      //Calculating the normal:
+      //Take the direction vectors 1.) from the left to the right neighbor 
+      // and 2.) from the upper to the lower neighbor.
+      //The vector orthogonal to these 
+
+      SF3dVector u,v,p1,p2; //u and v are direction vectors. p1 / p2: temporary used (storing the points)
+
+      if (xc > 0) p1 = F3dVector(Oscillators[xc-1+zc*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc-1+zc*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc-1+zc*NUM_X_OSCILLATORS].z);
+      else
+            p1 = F3dVector(Oscillators[xc+zc*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].z); 
+      if (xc < NUM_X_OSCILLATORS-1) 
+            p2 = F3dVector(Oscillators[xc+1+zc*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+1+zc*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+1+zc*NUM_X_OSCILLATORS].z);
+      else
+            p2 = F3dVector(Oscillators[xc+zc*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].z); 
+      u = p2-p1; //vector from the left neighbor to the right neighbor
+      if (zc > 0) p1 = F3dVector(Oscillators[xc+(zc-1)*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+(zc-1)*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+(zc-1)*NUM_X_OSCILLATORS].z);
+      else
+            p1 = F3dVector(Oscillators[xc+zc*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].z); 
+      if (zc < NUM_Z_OSCILLATORS-1) 
+            p2 = F3dVector(Oscillators[xc+(zc+1)*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+(zc+1)*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+(zc+1)*NUM_X_OSCILLATORS].z);
+      else
+            p2 = F3dVector(Oscillators[xc+zc*NUM_X_OSCILLATORS].x,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].y,
+                     Oscillators[xc+zc*NUM_X_OSCILLATORS].z); 
+      v = p2-p1; //vector from the upper neighbor to the lower neighbor
+      //calculat the normal:
+      SF3dVector normal = Normalize3dVector(CrossProduct(&u,&v));
+
+      //assign the normal:
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].nx = normal.x;
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].ny = normal.y;
+      Oscillators[xc+zc*NUM_X_OSCILLATORS].nz = normal.z;
+    }
+  }
+
+}
+
+void DrawScene(void)
+{
+  float white[] = {1,1,1,1};
+   float blue[] = {0.2,0.6,1,1};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,blue);
+  glDrawElements( GL_TRIANGLES, //mode
+            NumIndices,  //count, ie. how many indices
+            GL_UNSIGNED_INT, //type of the index array
+            Indices);;
+
+}
 
 //first person navigation
 void FirstpersonNaviagtion(void)
@@ -479,7 +753,7 @@ void drawTorus(double r, double c,int rSeg, int cSeg)
   glBindTexture(GL_TEXTURE_2D, texture[1]);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-  const double PI = 3.1415926535897932384626433832795;
+  //const double PI = 3.1415926535897932384626433832795;
   const double TAU = 2 * PI;
 
   for (int i = 0; i < rSeg; i++) {
@@ -985,11 +1259,6 @@ void drawTree(int treeHeight, float r1, float r2){
 
 
      }
-}
-
-void drawLake(){
-
-  
 }
 void drawForest(int numberOfTrees){
    float white[] = {1,1,1,1};
@@ -2387,6 +2656,7 @@ void display()
    //  Draw scene
 
  glScalef(scale,scale,scale);
+
  glPushMatrix();
  glScalef(0.8,0.8,0.8);
  glTranslatef(40.0,0.0,-5.0);
@@ -2415,8 +2685,9 @@ void display()
  glPopMatrix();
 
  glPushMatrix();
- glTranslatef(0.0,0.0,10.0);
- drawLake();
+ glTranslatef(25.0,0.0,37.0);
+ glScalef(0.8,0.8,0.8);
+ DrawScene();
  glPopMatrix();
 
  glPushMatrix();
@@ -2622,8 +2893,27 @@ void idle()
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    zh_l= fmod(90*t,360.0);
+   float dtime = 0.004f;  //if you want to be exact, you would have to replace this by the real time passed since the last frame (and probably divide it by a certain number)
+  g_timePassedSinceStart += dtime;
+
+  if (g_timePassedSinceStart > 1.7f)
+  {
+    g_bExcitersInUse = false;  //stop the exciters
+  }
+/*  //ENABLE THE FOLLOWING LINES FOR A RAIN EFFECT
+  int randomNumber = rand();
+  if (randomNumber < NUM_OSCILLATORS)
+  {
+    Oscillators[randomNumber].y = -0.05;
+  }
+  */
+
+
+  UpdateScene(false,dtime,g_timePassedSinceStart);
+ // Display();
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
+
 }
 
 /*
@@ -2803,6 +3093,26 @@ int main(int argc,char* argv[])
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    glutInitWindowSize(400,400);
    glutCreateWindow("Assignment 6: Xu Han");
+   //compute the vertices and indices
+  CreatePool();
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_NORMAL_ARRAY);
+  glVertexPointer(  3,   //3 components per vertex (x,y,z)
+            GL_FLOAT,
+            sizeof(SOscillator),
+            Oscillators);
+  glNormalPointer(  GL_FLOAT,
+            sizeof(SOscillator),
+            &Oscillators[0].nx);  //Pointer to the first color*/
+  glPointSize(2.0);
+  glClearColor(0.0,0.0,0.0,0.0);
+
+
+  glFrontFace(GL_CCW);   //Tell OGL which orientation shall be the front face
+  glShadeModel(GL_SMOOTH);
+
+  //initialize generation of random numbers:
+  srand((unsigned)time(NULL));
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
