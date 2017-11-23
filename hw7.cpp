@@ -371,7 +371,7 @@ void FirstpersonNaviagtion(void)
 // the point where item lies
 
 //gluLookAt(Ex, Ey, Ez, s_atx, s_aty, s_atz,0.0, 1.0, 0.0);
-      gluLookAt(Ex, Ey, Ez, Ex + scale*10*Sin(zh), Ey+scale*50*Sin(theta), Ez - scale*10*Cos(zh),0.0, 1.0, 0.0);
+      gluLookAt(Ex, Ey, Ez, Ex + 0.2*scale*10*Sin(zh), Ey+0.2*scale*50*Sin(theta), Ez - 0.2*scale*10*Cos(zh),0.0, 1.0, 0.0);
 }
 
 /*
@@ -434,23 +434,23 @@ static void Sky(double D)
    //  Sides
    glBindTexture(GL_TEXTURE_2D,sky[0]);
    glBegin(GL_QUADS);
-   glTexCoord2f(0.00,0.45); glVertex3f(-D,-0.2,-D);
-   glTexCoord2f(0.25,0.45); glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.00,0.45); glVertex3f(-D,-0.7,-D);
+   glTexCoord2f(0.25,0.45); glVertex3f(+D,-0.7,-D);
    glTexCoord2f(0.25,0.62); glVertex3f(+D,+D,-D);
    glTexCoord2f(0.00,0.62); glVertex3f(-D,+D,-D);
 
-   glTexCoord2f(0.25,0.45); glVertex3f(+D,-0.2,-D);
-   glTexCoord2f(0.50,0.45); glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.25,0.45); glVertex3f(+D,-0.7,-D);
+   glTexCoord2f(0.50,0.45); glVertex3f(+D,-0.7,+D);
    glTexCoord2f(0.50,0.62); glVertex3f(+D,+D,+D);
    glTexCoord2f(0.25,0.62); glVertex3f(+D,+D,-D);
 
-   glTexCoord2f(0.50,0.45); glVertex3f(+D,-0.2,+D);
-   glTexCoord2f(0.75,0.45); glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(0.50,0.45); glVertex3f(+D,-0.7,+D);
+   glTexCoord2f(0.75,0.45); glVertex3f(-D,-0.7,+D);
    glTexCoord2f(0.75,0.62); glVertex3f(-D,+D,+D);
    glTexCoord2f(0.50,0.62); glVertex3f(+D,+D,+D);
 
-   glTexCoord2f(0.75,0.45); glVertex3f(-D,-0.2,+D);
-   glTexCoord2f(1.00,0.45); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(0.75,0.45); glVertex3f(-D,-0.7,+D);
+   glTexCoord2f(1.00,0.45); glVertex3f(-D,-0.7,-D);
    glTexCoord2f(1.00,0.62); glVertex3f(-D,+D,-D);
    glTexCoord2f(0.75,0.62); glVertex3f(-D,+D,+D);
    glEnd();
@@ -463,10 +463,10 @@ static void Sky(double D)
    glTexCoord2f(0.5,0.87);glVertex3f(-D,+D,+D);
    glTexCoord2f(0.25,0.87);glVertex3f(-D,+D,-D);
 
-   glTexCoord2f(0.5,0.12);glVertex3f(-D,-0.2,+D);
-   glTexCoord2f(0.5,0.37);glVertex3f(+D,-0.2,+D);
-   glTexCoord2f(0.25,0.12);glVertex3f(+D,-0.2,-D);
-   glTexCoord2f(0.25,0.37); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(0.5,0.12);glVertex3f(-D,-0.7,+D);
+   glTexCoord2f(0.5,0.37);glVertex3f(+D,-0.7,+D);
+   glTexCoord2f(0.25,0.12);glVertex3f(+D,-0.7,-D);
+   glTexCoord2f(0.25,0.37); glVertex3f(-D,-0.7,-D);
    glEnd();
 
    glDisable(GL_TEXTURE_2D);
@@ -2552,25 +2552,25 @@ void drawGround(){
    glBegin(GL_QUADS);
    glNormal3f(0.0,1.0,0.0);
    
-   glTexCoord2f(0,0); glVertex3f(0.0,-0.05,0.0);
-   glTexCoord2f(25/4,0); glVertex3f(50,-0.05,0.0);
-   glTexCoord2f(25/4,20/4); glVertex3f(50,-0.05,50);
-   glTexCoord2f(0,20/4); glVertex3f(0.0,-0.05,50);
+   glTexCoord2f(0,0); glVertex3f(-500.0,-0.05,-500.0);
+   glTexCoord2f(25/4,0); glVertex3f(500,-0.05,-500.0);
+   glTexCoord2f(25/4,20/4); glVertex3f(500,-0.05,500);
+   glTexCoord2f(0,20/4); glVertex3f(-500,-0.05,500);
    glEnd();
 
    glBegin(GL_QUADS);
    glNormal3f(0.0,-1.0,0.0);
-   glTexCoord2f(0,0); glVertex3f(0.0,-0.1,0.0);
-   glTexCoord2f(25/4,0); glVertex3f(50,-0.1,0.0);
-   glTexCoord2f(25/4,20/4); glVertex3f(50,-0.1,50);
-   glTexCoord2f(0,20/4); glVertex3f(0.0,-0.1,50);
+   glTexCoord2f(0,0); glVertex3f(-500.0,-0.1,-500.0);
+   glTexCoord2f(25/4,0); glVertex3f(500,-0.1,-500.0);
+   glTexCoord2f(25/4,20/4); glVertex3f(500,-0.1,500);
+   glTexCoord2f(0,20/4); glVertex3f(-500.0,-0.1,500);
    //glColor3f(1.0,1.0,1.0);
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
 }
 
-void drawBridge(){
+/*void drawBridge(){
   float RGBA[] = {1,1,1,1};
   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
   glMaterialf(GL_FRONT,GL_SHININESS,shiny);
@@ -2578,7 +2578,7 @@ void drawBridge(){
    glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
   obj = LoadOBJ("woodenbridge.obj");
   glCallList(obj);
-}
+}*/
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -2653,26 +2653,26 @@ void display()
      glDisable(GL_LIGHTING);
    //  Set view angle
    glPushMatrix();
-   glTranslatef(0.0,-0.1,0.0);
+   glTranslatef(0.0,-0.5,0.0);
 
 
    //  Draw the stick
   if(mode_project== 2){
   glPushMatrix();
    glTranslatef(Ex,Ey-1.0,Ez);
-   glScalef(scale,scale,scale);
+   glScalef(0.7*scale,0.7*scale,0.7*scale);
    drawWand(10*Sin(zh), 50*Sin(theta+10), -10*Cos(zh));
    glPopMatrix();
 }
 
    //  Draw scene
 
- glScalef(scale,scale,scale);
- glPushMatrix();
+ glScalef(2*scale,2*scale,2*scale);
+ /*glPushMatrix();
  glScalef(0.45,0.45,0.45);
    glTranslatef(48.0,0.0,0.0);
    drawBridge();
-   glPopMatrix();
+   glPopMatrix();*/
 
  glPushMatrix();
  glScalef(0.8,0.8,0.8);
