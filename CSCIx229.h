@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <vector>
+//#include <vector>
 
 #ifdef USEGLEW
 #include <GL/glew.h>

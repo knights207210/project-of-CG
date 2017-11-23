@@ -31,6 +31,7 @@
  *  ESC        Exit
  */
 #include "CSCIx229.h"
+#include <vector>
 #define PI 3.14159265359
 #define NUM_X_OSCILLATORS   150
 #define NUM_Z_OSCILLATORS   150
@@ -94,6 +95,7 @@ float shiny   =   1;  // Shininess (value)
 int zh_l        =  90;  // Light azimuth
 float ylight  =   0;  // Elevation of light
 int numberOfTrees = 30;
+int obj;
 
 unsigned int texture[10];  //texture names
 
@@ -2568,6 +2570,16 @@ void drawGround(){
    glDisable(GL_TEXTURE_2D);
 }
 
+void drawBridge(){
+  float RGBA[] = {1,1,1,1};
+  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  glMaterialf(GL_FRONT,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+  obj = LoadOBJ("woodenbridge.obj");
+  glCallList(obj);
+}
+
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
@@ -2656,6 +2668,11 @@ void display()
    //  Draw scene
 
  glScalef(scale,scale,scale);
+ glPushMatrix();
+ glScalef(0.45,0.45,0.45);
+   glTranslatef(48.0,0.0,0.0);
+   drawBridge();
+   glPopMatrix();
 
  glPushMatrix();
  glScalef(0.8,0.8,0.8);
@@ -2835,6 +2852,11 @@ glPushMatrix();
    glTranslatef(-15.0,0.0,-15.0);
    drawGround();
    glPopMatrix();
+
+   
+
+
+
    
    
    //  Draw axes - no lighting from here on
