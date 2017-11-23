@@ -74,9 +74,9 @@ int axes=1;       //  Display axes
 int mode=0;       //  Projection mode
 int mode_project =0;
 int move=1;       //  Move light
-int th=0;         //  Azimuth of view angle
-int ph=0;         //  Elevation of view angle
-int fov=55;       //  Field of view (for perspective)
+int th=160;         //  Azimuth of view angle
+int ph=35;         //  Elevation of view angle
+int fov=90;       //  Field of view (for perspective)
 int light=1;      //  Lighting
 double asp=1;     //  Aspect ratio
 double dim=5.0;   //  Size of world
@@ -483,23 +483,23 @@ static void Sky1(double D)
    //  Sides
    glBindTexture(GL_TEXTURE_2D,sky[1]);
    glBegin(GL_QUADS);
-   glTexCoord2f(0.00,0.37); glVertex3f(-D,-0.2,-D);
-   glTexCoord2f(0.255,0.37); glVertex3f(+D,-0.2,-D);
+   glTexCoord2f(0.00,0.37); glVertex3f(-D,-0.7,-D);
+   glTexCoord2f(0.255,0.37); glVertex3f(+D,-0.7,-D);
    glTexCoord2f(0.255,0.615); glVertex3f(+D,+D,-D);
    glTexCoord2f(0.00,0.615); glVertex3f(-D,+D,-D);
 
-   glTexCoord2f(0.255,0.37); glVertex3f(+D,-0.2,-D);
-   glTexCoord2f(0.495,0.37); glVertex3f(+D,-0.2,+D);
+   glTexCoord2f(0.255,0.37); glVertex3f(+D,-0.7,-D);
+   glTexCoord2f(0.495,0.37); glVertex3f(+D,-0.7,+D);
    glTexCoord2f(0.495,0.615); glVertex3f(+D,+D,+D);
    glTexCoord2f(0.255,0.615); glVertex3f(+D,+D,-D);
 
-   glTexCoord2f(0.495,0.37); glVertex3f(+D,-0.2,+D);
-   glTexCoord2f(0.75,0.37); glVertex3f(-D,-0.2,+D);
+   glTexCoord2f(0.495,0.37); glVertex3f(+D,-0.7,+D);
+   glTexCoord2f(0.75,0.37); glVertex3f(-D,-0.7,+D);
    glTexCoord2f(0.75,0.615); glVertex3f(-D,+D,+D);
    glTexCoord2f(0.495,0.615); glVertex3f(+D,+D,+D);
 
-   glTexCoord2f(0.75,0.37); glVertex3f(-D,-0.2,+D);
-   glTexCoord2f(1.00,0.37); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(0.75,0.37); glVertex3f(-D,-0.7,+D);
+   glTexCoord2f(1.00,0.37); glVertex3f(-D,-0.7,-D);
    glTexCoord2f(1.00,0.615); glVertex3f(-D,+D,-D);
    glTexCoord2f(0.75,0.615); glVertex3f(-D,+D,+D);
    glEnd();
@@ -512,10 +512,10 @@ static void Sky1(double D)
    glTexCoord2f(0.495,0.87);glVertex3f(-D,+D,+D);
    glTexCoord2f(0.255,0.87);glVertex3f(-D,+D,-D);
 
-   glTexCoord2f(0.495,0.125);glVertex3f(-D,-0.2,+D);
-   glTexCoord2f(0.495,0.37);glVertex3f(+D,-0.2,+D);
-   glTexCoord2f(0.255,0.125);glVertex3f(+D,-0.2,-D);
-   glTexCoord2f(0.255,0.37); glVertex3f(-D,-0.2,-D);
+   glTexCoord2f(0.495,0.125);glVertex3f(-D,-0.7,+D);
+   glTexCoord2f(0.495,0.37);glVertex3f(+D,-0.7,+D);
+   glTexCoord2f(0.255,0.125);glVertex3f(+D,-0.7,-D);
+   glTexCoord2f(0.255,0.37); glVertex3f(-D,-0.7,-D);
    glEnd();
 
    glDisable(GL_TEXTURE_2D);
@@ -2553,17 +2553,17 @@ void drawGround(){
    glNormal3f(0.0,1.0,0.0);
    
    glTexCoord2f(0,0); glVertex3f(-500.0,-0.05,-500.0);
-   glTexCoord2f(25/4,0); glVertex3f(500,-0.05,-500.0);
-   glTexCoord2f(25/4,20/4); glVertex3f(500,-0.05,500);
-   glTexCoord2f(0,20/4); glVertex3f(-500,-0.05,500);
+   glTexCoord2f(25*8,0); glVertex3f(500,-0.05,-500.0);
+   glTexCoord2f(25*8,20*8); glVertex3f(500,-0.05,500);
+   glTexCoord2f(0,20*8); glVertex3f(-500,-0.05,500);
    glEnd();
 
    glBegin(GL_QUADS);
    glNormal3f(0.0,-1.0,0.0);
    glTexCoord2f(0,0); glVertex3f(-500.0,-0.1,-500.0);
-   glTexCoord2f(25/4,0); glVertex3f(500,-0.1,-500.0);
-   glTexCoord2f(25/4,20/4); glVertex3f(500,-0.1,500);
-   glTexCoord2f(0,20/4); glVertex3f(-500.0,-0.1,500);
+   glTexCoord2f(25*8,0); glVertex3f(500,-0.1,-500.0);
+   glTexCoord2f(25*8,20*8); glVertex3f(500,-0.1,500);
+   glTexCoord2f(0,20*8); glVertex3f(-500.0,-0.1,500);
    //glColor3f(1.0,1.0,1.0);
    glEnd();
    glPopMatrix();
@@ -2608,6 +2608,7 @@ void display()
    }
    else if (mode_project==2){
       // set parameters for glulookat()
+    fov = 40;
               
       FirstpersonNaviagtion();
    }
@@ -2668,6 +2669,7 @@ void display()
    //  Draw scene
 
  glScalef(2*scale,2*scale,2*scale);
+ glTranslatef(-25,0,0);
  /*glPushMatrix();
  glScalef(0.45,0.45,0.45);
    glTranslatef(48.0,0.0,0.0);
