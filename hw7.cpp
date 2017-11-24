@@ -62,6 +62,7 @@ int plane=1;
 float speed=0.5;
 int    sky[2];   //  Sky textures
 int box=0;
+int firework=1;
 
 //initialized point view
 
@@ -899,7 +900,7 @@ void InitParticles()
   g_ParticleSystem1.SetDieColor(0.0f,1.0f,0.0f,
                  0.0f,0.3f,0.0f);
   g_ParticleSystem1.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
-  g_ParticleSystem1.SetEmitter(0.8f,0.0f,0.0f,
+  g_ParticleSystem1.SetEmitter(Ex+10*Sin(zh),Ey-1.0+50*Sin(theta+10),Ez-10*Cos(zh),
                 0.02f,0.0f,0.02f);
   g_ParticleSystem1.SetAcceleration(F3dVector(0.0f,-1.0f,0.0f),0.83f,1.4f);
   g_ParticleSystem1.SetSizeValues(3.0f,3.0f,4.0f,4.0f);
@@ -3396,9 +3397,14 @@ void display()
    glScalef(0.7*scale,0.7*scale,0.7*scale);
    drawWand(10*Sin(zh), 50*Sin(theta+10), -10*Cos(zh));
    glPopMatrix();
+
+
 }
 
+
+
 //partical engine
+if(firework){
 clock_t iNowTime = clock();
 float timePassed = (float)(iNowTime- g_iLastRenderTime)/CLOCKS_PER_SEC;
 g_ParticleSystem1.UpdateSystem(timePassed);
@@ -3410,6 +3416,7 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
     CamDistToEmitter = 0.2f;
   glPointSize(1.0f/CamDistToEmitter);
   g_ParticleSystem1.Render();
+}
    //  Draw scene
 
  glScalef(2*scale,2*scale,2*scale);
@@ -3773,6 +3780,8 @@ void key(unsigned char ch,int x,int y)
    //  Toggle light movement
    else if (ch == 'm' || ch == 'M')
       move = 1-move;
+    else if (ch == 'f' || ch == 'F')
+      firework = 1-firework;
    //  Move light
    else if (ch == '<')
       zh_l += 1;
@@ -3883,7 +3892,8 @@ int main(int argc,char* argv[])
 
   //initialize generation of random numbers:
   srand((unsigned)time(NULL));
-  InitParticles();
+  //InitParticles();
+   
 
    //  Set callbacks
    glutDisplayFunc(display);
@@ -3893,6 +3903,7 @@ int main(int argc,char* argv[])
    glutIdleFunc(idle);
    //  Pass control to GLUT so it can interact with the user
    //  Load textures
+   InitParticles();
    texture[0] = LoadTexBMP("1.bmp");
    texture[1] = LoadTexBMP("2.bmp");
    texture[2] = LoadTexBMP("3.bmp");
