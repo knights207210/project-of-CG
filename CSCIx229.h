@@ -22,12 +22,14 @@
 #define PIdiv180 3.14159265359/180.0
 
 
+
 /////////////////////////////////
 //Note: All angles in degrees  //
 /////////////////////////////////
 
 struct SF3dVector  //Float 3d-vect, normally used
 {
+
 	GLfloat x,y,z;
 };
 struct SF2dVector
@@ -37,6 +39,7 @@ struct SF2dVector
 
 #define Cos(th) cos(3.1415926/180*(th))
 #define Sin(th) sin(3.1415926/180*(th))
+
 
 #ifdef __cplusplus
 extern "C" {

@@ -39,7 +39,12 @@
 #define OSCILLATOR_DISTANCE   0.05
 
 #define OSCILLATOR_WEIGHT       0.0002
+#define SQR(a) (a*a)
 
+#define BILLBOARDING_NONE             0
+#define BILLBOARDING_PERPTOVIEWDIR          1  //align particles perpendicular to view direction
+#define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  //like PERPToViewDir, but Particles are vertically aligned
+#define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
 int zh=0;       // rotate around z
 int NumOfEdges=50;   //to make up tower's circles and number of teeth on tower
@@ -56,7 +61,7 @@ float r=0.0;
 int plane=1; 
 float speed=0.5;
 int    sky[2];   //  Sky textures
-int box=1;
+int box=0;
 
 //initialized point view
 
@@ -182,6 +187,733 @@ SF3dVector operator- (SF3dVector v, SF3dVector u)
   res.z = v.z-u.z;
   return res;
 }
+SF3dVector operator* (SF3dVector v, float r)
+{
+  SF3dVector res;
+  res.x = v.x*r;
+  res.y = v.y*r;
+  res.z = v.z*r;
+  return res;
+}
+SF3dVector operator/ (SF3dVector v, float r)
+{
+  return v*(1/r);
+}
+/*float operator* (SF3dVector v, SF3dVector u)  //Scalar product
+{
+  return v.x*u.x+v.y*u.y+v.z*u.z;
+}*/
+
+
+
+#define NULL_VECTOR F3dVector(0.0f,0.0f,0.0f)
+class CCCParticleSystem;
+class CCCParticle
+{
+private:
+  //Position of the particle:  NOTE: This might be the global position or the local position (depending on the system's translating behavior)
+  SF3dVector m_Position;
+  //Moving the particle:
+  //Particle's velocity:
+  SF3dVector m_Velocity;
+  //Particle's acceleration (per Sec):
+  SF3dVector m_Acceleration;
+  //Spinning the particle
+  float    m_fSpinAngle; //radian measure
+  //Particle's spin speed:
+  float    m_fSpinSpeed;
+  //Particle's spin acceleration:
+  float      m_fSpinAcceleration;
+  //Particle's alpha value (=transparency)
+  float      m_fAlpha;
+  float    m_fAlphaChange;  //how much is the alpha value changed per sec?
+  //Particle's color:
+  SF3dVector m_Color;   //x=r, y=g, z=b
+  SF3dVector m_ColorChange;  //how to change to color per sec
+  //Particle's size:  (the use of this value is dependent of m_bUseTexture in the parent!)
+  float    m_fSize;
+  float    m_fSizeChange; 
+  //Handling the lifetime:
+  float    m_fDieAge; //At what "age" will the particle die?
+  float    m_fAge;    //Age of the particle (is updated   
+  //Needed to access the system's values:
+  CCCParticleSystem * m_ParentSystem;
+  
+public:
+  bool     m_bIsAlive;  //Is the particle active or not? Must be visible for the System
+  void Initialize(CCCParticleSystem * ParentSystem);
+  void Update(float timePassed);  //called by UpdateSystem if particle is active
+  void Render();  
+
+};
+
+
+/*******************
+CCCParticleSystem
+*******************/
+
+class CCCParticleSystem
+{
+public:  //The values how to emit a particle must be public because the particle  
+     //must be able to access them in the creation function.
+//*************************************
+// EMISSION VALUES
+//*************************************
+
+  //Position of the emitter:
+  SF3dVector    m_EmitterPosition;
+  //How far may the particles be created from the emitter?
+  SF3dVector    m_MaxCreationDeviation;  //3 positive values. Declares the possible distance from the emitter
+                       // Distance can be between -m_MaxCreationDeviation.? and +m_MaxCreationDeviation.?
+  //Which direction are the particles emitted to?
+  SF3dVector    m_StandardEmitDirection;
+  SF3dVector    m_MaxEmitDirectionDeviation; //Works like m_MaxCreationDeviation
+
+  //Which speed do they have when they are emitted?
+  //->Somewhere between these speeds:
+  float     m_fMinEmitSpeed;
+  float     m_fMaxEmitSpeed;
+
+  //How fast do they spin when being emitted? Speed here is angle speed (radian measure) per sec
+  float     m_fMinEmitSpinSpeed;
+  float     m_fMaxEmitSpinSpeed;
+  //Spinning acceleration:
+  float     m_fMinSpinAcceleration;
+  float     m_fMaxSpinAcceleration;
+
+  //The acceleration vector always has the same direction (normally (0/-1/0) for gravity):
+  SF3dVector    m_AccelerationDirection;
+  //...but not the same amount:
+  float     m_fMinAcceleration;
+  float     m_fMaxAcceleration;
+  
+  //How translucent are the particles when they are created?
+  float     m_fMinEmitAlpha;
+  float     m_fMaxEmitAlpha;
+  //How translucent are the particles when they have reached their dying age?
+  float     m_fMinDieAlpha;
+  float     m_fMaxDieAlpha;
+
+  //How big are the particles when they are created / when they die
+  float     m_fMinEmitSize;
+  float     m_fMaxEmitSize;
+  float     m_fMinDieSize;
+  float     m_fMaxDieSize;
+
+
+  //The same with the color:
+  SF3dVector    m_MinEmitColor;
+  SF3dVector    m_MaxEmitColor;
+  SF3dVector    m_MinDieColor;
+  SF3dVector    m_MaxDieColor;
+
+//*************************************
+// OTHER PARTICLE INFORMATION
+//*************************************
+
+  //How long shall the particles live? Somewhere (randomly) between:
+  float     m_fMinDieAge;
+  float     m_fMaxDieAge;
+
+  bool      m_bRecreateWhenDied;  //Set it true so a particle will be recreate itsself as soon
+                      //as it died
+
+//*************************************
+// RENDERING PROPERTIES
+//************************************* 
+
+  int       m_iBillboarding;    //See the constants above
+  
+  //COGLTexture * m_Texture;        //Pointer to the texture (which is only an "alpha texture") 
+  bool      m_bUseTexture;    //Set it false if you want to use GL_POINTS as particles!
+
+  bool      m_bParticlesLeaveSystem;  //Switch it off if the particle's positions 
+                       //shall be relative to the system's position (emitter position)
+    
+//*************************************
+// STORING THE PARTICLES
+//************************************* 
+  //Particle array:
+  CCCParticle    *m_pParticles;
+  //Maximum number of particles (assigned when reserving mem for the particle array)
+  int       m_iMaxParticles;
+  //How many particles are currently in use?
+  int       m_iParticlesInUse;
+  //How many particles are created per second?
+  //Note that this is an average value and if you set it too high, there won't be
+  //dead particles that can be created unless the lifetime is very short and/or 
+  //the array of particles (m_pParticles) is big 
+  int       m_iParticlesCreatedPerSec;  //if bRecreateWhenDied is true, this is the ADDITIONAL number of created particles!
+  float     m_fCreationVariance; //Set it 0 if the number of particles created per sec 
+                     //should be the same each second. Otherwise use a positive value:
+                     //Example: 1.0 affects that the NumParticlesCreatedPerSec varies 
+                     //between m_iParticlesCreatedPerSec/2 and 1.5*m_iParticlesCreatedPerSec
+//Do not set these values:
+  float     m_fCurrentPointSize;  //required when rendering without particles
+  //If Billboarding is set to NONE, the following vectors are (1,0,0) and (0,1,0).
+  //If it is switched on, they are modified according to the viewdir/camera position (in Render of the System)
+  SF3dVector    m_BillboardedX;
+  SF3dVector    m_BillboardedY;     
+
+
+//*************************************
+// FUNCTIONS TO ASSIGN THESE MANY VECTORS MORE EASILY
+//*************************************
+
+  //Set the emitter position (you can pass a vector or x,y and z)
+  void      SetEmitter(float x, float y, float z, float EmitterDeviationX,float EmitterDeviationY,float EmitterDeviationZ);
+  void      SetEmitter(SF3dVector pos,SF3dVector dev);
+  
+  //Set the emission direction:
+  void      SetEmissionDirection(float x, float y, float z,         //direction
+                     float MaxDeviationX, float MaxDeviationY, float MaxDeviationZ);  //max deviation
+  void      SetEmissionDirection(SF3dVector direction, SF3dVector Deviation);
+
+  //Spin Speed
+  void      SetSpinSpeed(float min, float max);
+  
+  //Acceleration
+  void      SetAcceleration(float x, float y, float z, float Min, float Max);
+  void      SetAcceleration(SF3dVector acc, float Min, float Max);
+
+  //Color (at creation and dying age):
+  void      SetCreationColor(float minr, float ming, float minb,
+                     float maxr, float maxg, float maxb);
+  void      SetCreationColor(SF3dVector min, SF3dVector max);
+
+  void      SetDieColor   (float minr, float ming, float minb,
+                     float maxr, float maxg, float maxb);
+  void      SetDieColor   (SF3dVector min, SF3dVector max);
+  //alpha:
+  void      SetAlphaValues (float MinEmit, float MaxEmit, float MinDie, float MaxDie);
+  //size:
+  void      SetSizeValues (float EmitMin, float EmitMax, float DieMin, float DieMax);
+    
+//*************************************
+// FUNCTIONS TO INITIALIZE THE SYSTEM
+//*************************************
+
+  CCCParticleSystem();                //constructor: sets default values
+
+  bool      Initialize(int iNumParticles);    //reserves space for the particles
+
+  bool      LoadTextureFromFile(char * Filename);
+
+//*************************************
+// FUNCTIONS TO UPDATE/RENDER THE SYSTEM
+//*************************************
+
+  void      UpdateSystem(float timePassed); //updates all particles alive
+  void      Render();             //renders all particles alive
+
+};
+
+void CCCParticle::Initialize(CCCParticleSystem *ParentSystem)
+{
+
+  //Calculate the age, the particle will live:
+  m_fDieAge = ParentSystem->m_fMinDieAge + 
+           ((ParentSystem->m_fMaxDieAge - ParentSystem->m_fMinDieAge)*RANDOM_FLOAT);
+  if (m_fDieAge == 0.0f) return;  //make sure there is no div 0
+  m_fAge = 0.0f;
+
+  //set the position:
+  if (ParentSystem->m_bParticlesLeaveSystem)
+  {
+    //start with "global" coordinates (the current coordinates of the emitter position)
+    m_Position = ParentSystem->m_EmitterPosition;
+  }
+  else
+  {
+    //In this case we assume a local coordinate system:
+    m_Position = NULL_VECTOR;
+  }
+  //Add the deviation from the emitter position:
+  m_Position.x += ParentSystem->m_MaxCreationDeviation.x*(RANDOM_FLOAT*2.0f-1.0f);
+  m_Position.y += ParentSystem->m_MaxCreationDeviation.y*(RANDOM_FLOAT*2.0f-1.0f);
+  m_Position.z += ParentSystem->m_MaxCreationDeviation.z*(RANDOM_FLOAT*2.0f-1.0f);
+  //set the emission velocity
+  m_Velocity.x = ParentSystem->m_StandardEmitDirection.x + ParentSystem->m_MaxEmitDirectionDeviation.x*(RANDOM_FLOAT*2.0f-1.0f);
+  m_Velocity.y = ParentSystem->m_StandardEmitDirection.y + ParentSystem->m_MaxEmitDirectionDeviation.y*(RANDOM_FLOAT*2.0f-1.0f);
+  m_Velocity.z = ParentSystem->m_StandardEmitDirection.z + ParentSystem->m_MaxEmitDirectionDeviation.z*(RANDOM_FLOAT*2.0f-1.0f);
+  m_Velocity = m_Velocity*((ParentSystem->m_fMinEmitSpeed + 
+                             (ParentSystem->m_fMaxEmitSpeed - ParentSystem->m_fMinEmitSpeed)*RANDOM_FLOAT));
+  //m_Velocity = operator*(m_Velocity,(ParentSystem->m_fMinEmitSpeed + (ParentSystem->m_fMaxEmitSpeed - ParentSystem->m_fMinEmitSpeed)*RANDOM_FLOAT));
+  //set the acceleration vector:
+  m_Acceleration = ParentSystem->m_AccelerationDirection* 
+                  (ParentSystem->m_fMinAcceleration + (ParentSystem->m_fMaxAcceleration-ParentSystem->m_fMinAcceleration)*RANDOM_FLOAT);
+  //set the alpha / color values:
+  m_Color = ParentSystem->m_MinEmitColor + 
+       ((ParentSystem->m_MaxEmitColor-ParentSystem->m_MinEmitColor) * RANDOM_FLOAT);
+  //calculate the "end color" (in order to get the ColorChange):
+  SF3dVector EndColor = ParentSystem->m_MinDieColor + 
+       ((ParentSystem->m_MaxDieColor-ParentSystem->m_MinDieColor) * RANDOM_FLOAT);
+  m_ColorChange = (EndColor-m_Color) / m_fDieAge;
+
+  m_fAlpha = ParentSystem->m_fMinEmitAlpha 
+           + ((ParentSystem->m_fMaxEmitAlpha - ParentSystem->m_fMinEmitAlpha) * RANDOM_FLOAT);
+  float fEndAlpha = ParentSystem->m_fMinDieAlpha 
+           + ((ParentSystem->m_fMaxDieAlpha - ParentSystem->m_fMinDieAlpha) * RANDOM_FLOAT);
+  m_fAlphaChange = (fEndAlpha - m_fAlpha) / m_fDieAge;
+
+  //set the size values:
+  m_fSize = ParentSystem->m_fMinEmitSize +
+       ((ParentSystem->m_fMaxEmitSize - ParentSystem->m_fMinEmitSize) * RANDOM_FLOAT);
+  float fEndSize = ParentSystem->m_fMinDieSize +
+       ((ParentSystem->m_fMaxDieSize - ParentSystem->m_fMinDieSize) * RANDOM_FLOAT);
+  m_fSizeChange = (fEndSize - m_fSize) / m_fDieAge;
+
+  //spin values:
+  m_fSpinAngle = 0.0f;
+  m_fSpinSpeed = ParentSystem->m_fMinEmitSpinSpeed +
+      ((ParentSystem->m_fMaxEmitSpinSpeed - ParentSystem->m_fMinEmitSpinSpeed) * RANDOM_FLOAT);
+  m_fSpinAcceleration = ParentSystem->m_fMinSpinAcceleration +
+      ((ParentSystem->m_fMaxSpinAcceleration - ParentSystem->m_fMinSpinAcceleration) * RANDOM_FLOAT);
+
+
+
+  //Ok, we're done:
+  m_bIsAlive = true;
+  m_ParentSystem = ParentSystem;
+
+
+}
+
+void CCCParticle::Update(float timePassed)
+{
+  //Update all time-dependent values:
+  m_fAge += timePassed;
+  if (m_fAge >= m_fDieAge) 
+  {
+    if (m_ParentSystem->m_bRecreateWhenDied) 
+    {
+      Initialize(m_ParentSystem);
+      Update(RANDOM_FLOAT * timePassed);  //see comment in UpdateSystem
+    }
+    else
+    {
+      m_fAge = 0.0f;
+      m_bIsAlive = false;
+      m_ParentSystem->m_iParticlesInUse--;
+    }
+
+    return;
+  }
+
+  m_fSize  += m_fSizeChange *timePassed;
+  m_fAlpha += m_fAlphaChange*timePassed;
+  m_Color = m_Color + m_ColorChange*timePassed;
+  m_Velocity = m_Velocity + m_Acceleration*timePassed;
+  //Note: exact would be: m_Position = 1/2*m_Acceleration*timePassed² + m_VelocityOLD*timePassed;
+  //But this approach is ok, I think!
+  m_Position = m_Position + (m_Velocity*timePassed);
+
+  m_fSpinSpeed += m_fSpinAcceleration*timePassed;
+  m_fSpinAngle += m_fSpinSpeed*timePassed;
+
+  //That's all!
+}
+
+void CCCParticle::Render()
+{
+  if (!m_ParentSystem->m_bUseTexture) 
+  {
+    glPointSize(m_fSize*m_ParentSystem->m_fCurrentPointSize);
+    float color[4];
+    color[0] = m_Color.x;
+    color[1] = m_Color.y;
+    color[2] = m_Color.z;
+    color[3] = m_fAlpha;
+
+    glColor4fv(&color[0]);
+
+    glBegin(GL_POINTS);
+      glVertex3fv(&m_Position.x);
+    glEnd();
+  }
+  else
+  {
+    //render using texture: (texture was already set active by the Render method of the particle system)
+    
+    float color[4];
+    color[0] = m_Color.x;
+    color[1] = m_Color.y;
+    color[2] = m_Color.z;
+    color[3] = m_fAlpha;
+    glColor4fv(&color[0]);
+
+    SF3dVector RotatedX = m_ParentSystem->m_BillboardedX;
+    SF3dVector RotatedY = m_ParentSystem->m_BillboardedY;
+
+
+     //If spinning is switched on, rotate the particle now:
+    if (m_fSpinAngle > 0.0f)
+    {
+      RotatedX = m_ParentSystem->m_BillboardedX * cos(m_fSpinAngle) 
+               + m_ParentSystem->m_BillboardedY * sin(m_fSpinAngle);
+      RotatedY = m_ParentSystem->m_BillboardedY * cos(m_fSpinAngle) 
+               - m_ParentSystem->m_BillboardedX * sin(m_fSpinAngle);
+    }
+  
+    
+    //Render a quadrangle with the size m_fSize
+    SF3dVector coords = m_Position - (RotatedX*(0.5f*m_fSize))
+                     - (RotatedY*(0.5f*m_fSize));
+    glBegin(GL_POLYGON);
+      glVertex3fv(&coords.x);
+      glTexCoord2f(0.0f,1.0f);
+      coords = coords + RotatedY * m_fSize;
+      glVertex3fv(&coords.x);
+      glTexCoord2f(1.0f,1.0f);
+      coords = coords + RotatedX * m_fSize;     
+      glVertex3fv(&coords.x);
+      glTexCoord2f(1.0f,0.0f);
+      coords = coords - RotatedY * m_fSize;
+      glVertex3fv(&coords.x);
+      glTexCoord2f(0.0f,0.0f);
+    glEnd();
+
+
+  }
+
+}
+
+/*************************************
+
+METHODS OF CCCParticleSytem class
+
+**************************************/
+
+
+CCCParticleSystem::CCCParticleSystem()
+{
+  //Set default values:
+  
+  //motion:
+  this->m_EmitterPosition = NULL_VECTOR;
+  this->m_MaxCreationDeviation = NULL_VECTOR;
+
+  this->m_StandardEmitDirection = NULL_VECTOR;
+  this->m_MaxEmitDirectionDeviation = NULL_VECTOR;
+  this->m_fMaxEmitSpeed = 0.0f;
+  this->m_fMinEmitSpeed = 0.0f;
+
+  this->m_AccelerationDirection = NULL_VECTOR;
+  this->m_fMaxAcceleration = 0.0f;
+  this->m_fMinAcceleration = 0.0f;
+
+  this->m_fMinEmitSpinSpeed = 0.0f;
+  this->m_fMaxEmitSpinSpeed = 0.0f;
+  
+  this->m_fMaxSpinAcceleration = 0.0f;
+  this->m_fMinSpinAcceleration = 0.0f;
+
+
+  //look:
+  this->m_fMaxEmitAlpha = 0.0f;
+  this->m_fMinEmitAlpha = 0.0f;
+  this->m_fMaxDieAlpha = 1.0f;
+  this->m_fMinDieAlpha = 1.0f;
+
+  this->m_MaxEmitColor = NULL_VECTOR;
+  this->m_MinEmitColor = NULL_VECTOR;
+  this->m_MaxDieColor = NULL_VECTOR;
+  this->m_MinDieColor = NULL_VECTOR;
+
+  //this->m_Texture = NULL;
+  this->m_bUseTexture = false;
+  this->m_iBillboarding = BILLBOARDING_NONE;
+
+  //size:
+  this->m_fMaxEmitSize = 0.0f;
+  this->m_fMinEmitSize = 0.0f;
+  this->m_fMaxDieSize = 0.0f;
+  this->m_fMinDieSize = 0.0f;
+
+
+  //behavior:
+  this->m_bRecreateWhenDied = false;
+  
+  this->m_fMaxDieAge = 1.0f;
+  this->m_fMinDieAge = 1.0f;
+
+  this->m_iMaxParticles = 0;  //array is not yet created
+  this->m_iParticlesInUse = 0;
+
+  this->m_iParticlesCreatedPerSec = 0;
+  this->m_fCreationVariance = 0.0f;
+  this->m_bParticlesLeaveSystem = false;
+  this->m_pParticles = NULL;
+
+}
+//*********************************************************
+void CCCParticleSystem::SetEmitter(float x, float y, float z, float EmitterDeviationX,float EmitterDeviationY,float EmitterDeviationZ)
+{
+  SetEmitter(F3dVector(x,y,z),F3dVector(EmitterDeviationX,EmitterDeviationY,EmitterDeviationZ));
+}
+
+void CCCParticleSystem::SetEmitter(SF3dVector pos, SF3dVector dev)
+{
+  m_EmitterPosition = pos;
+  m_MaxCreationDeviation = dev;
+}
+
+void CCCParticleSystem::SetEmissionDirection(float x, float y, float z,
+                       float MaxDeviationX, float MaxDeviationY, float MaxDeviationZ)
+{
+  SetEmissionDirection(F3dVector(x,y,z),F3dVector(MaxDeviationX,MaxDeviationY,MaxDeviationZ));
+}
+
+
+void CCCParticleSystem::SetEmissionDirection(SF3dVector direction, SF3dVector Deviation)
+{
+  m_StandardEmitDirection = direction;
+  m_MaxEmitDirectionDeviation = Deviation;
+}
+
+
+
+
+void CCCParticleSystem::SetSpinSpeed(float min, float max)
+{
+  m_fMinEmitSpinSpeed = min;
+  m_fMaxEmitSpinSpeed = max;
+}
+
+
+void CCCParticleSystem::SetAcceleration(float x, float y, float z, float Min, float Max)
+{
+  SetAcceleration(F3dVector(x,y,z),Min,Max);
+}
+
+void CCCParticleSystem::SetAcceleration(SF3dVector acc, float Min, float Max)
+{
+  m_AccelerationDirection = acc;
+  m_fMaxAcceleration = Max;
+  m_fMinAcceleration = Min;
+}
+
+void CCCParticleSystem::SetCreationColor(float minr, float ming, float minb,
+                       float maxr, float maxg, float maxb)
+{
+  SetCreationColor(F3dVector(minr,ming,minb),F3dVector(maxr,maxg,maxb));
+}
+
+void CCCParticleSystem::SetCreationColor(SF3dVector min, SF3dVector max)
+{
+  m_MinEmitColor = min;
+  m_MaxEmitColor = max;
+}
+
+
+void CCCParticleSystem::SetDieColor (float minr, float ming, float minb,
+                       float maxr, float maxg, float maxb)
+{
+  SetDieColor(F3dVector(minr,ming,minb),F3dVector(maxr,maxg,maxb));
+}
+
+void CCCParticleSystem::SetDieColor   (SF3dVector min, SF3dVector max)
+{
+  m_MinDieColor = min;
+  m_MaxDieColor = max;
+}
+
+void CCCParticleSystem::SetAlphaValues (float MinEmit, float MaxEmit, float MinDie, float MaxDie)
+{
+  m_fMinEmitAlpha = MinEmit;
+  m_fMaxEmitAlpha = MaxEmit;
+  m_fMinDieAlpha = MinDie;
+  m_fMaxDieAlpha = MaxDie;
+}
+
+void CCCParticleSystem::SetSizeValues (float EmitMin, float EmitMax, float DieMin, float DieMax)
+{
+  m_fMinEmitSize = EmitMin;
+  m_fMaxEmitSize = EmitMax;
+  m_fMinDieSize = DieMin;
+  m_fMaxDieSize = DieMax;
+}
+//*********************************************************
+
+bool CCCParticleSystem::Initialize(int iNumParticles)
+{
+  this->m_pParticles = new CCCParticle[iNumParticles];
+  if (m_pParticles == NULL) 
+  {
+    return false;
+    this->m_iMaxParticles = 0;
+    this->m_iParticlesInUse = 0;
+  }
+
+  this->m_iMaxParticles = iNumParticles;
+  this->m_iParticlesInUse = 0;
+
+  //Set the status of each particle to DEAD
+  for (int i = 0; i < iNumParticles; i++)
+  {
+    m_pParticles[i].m_bIsAlive = false;
+  }
+
+  return true;
+
+
+  
+}
+
+
+void CCCParticleSystem::UpdateSystem(float timePassed)
+{
+  //We have to 
+  //  -update the particles (= move the particles, change their alpha, color, speed values)
+  //  -create new particles, if desired and there are "free" particles
+
+  //First get the number of particles we want to create (randomly in a certain dimension (dependent of m_CreationVariance)
+  
+  int iParticlesToCreate = (int) ((float)m_iParticlesCreatedPerSec
+                       *timePassed
+                                       *(1.0f+m_fCreationVariance*(RANDOM_FLOAT-0.5f)));
+  
+
+  //loop through the particles and update / create them
+  for (int i = 0; i < m_iMaxParticles; i++)
+  {
+    if (m_pParticles[i].m_bIsAlive)
+    {
+      m_pParticles[i].Update(timePassed);
+    }
+
+    //Should we create the particle?
+    if (iParticlesToCreate > 0)
+    {
+      if (!m_pParticles[i].m_bIsAlive)
+      {
+        m_pParticles[i].Initialize(this);
+        //Update the particle: This has an effect, as if the particle would have
+        //been emitted some milliseconds ago. This is very useful on slow PCs:
+        //Especially if you simulate something like rain, then you could see that 
+        //many particles are emitted at the same time (same "UpdateSystem" call),
+        //if you would not call this function:        
+        m_pParticles[i].Update(RANDOM_FLOAT*timePassed);  
+        iParticlesToCreate--;
+      }
+    }
+
+  }
+  
+}
+
+/*bool CCCParticleSystem::LoadTextureFromFile(char * Filename)
+{
+  //Create the texture pointer:
+  m_Texture = new COGLTexture;
+
+  if (m_Texture == NULL) return false;
+
+  if (!m_Texture->LoadFromTGA(Filename,NULL,true)) return false;  //pass NULL as 2. param (only required if you want to combine rgb and alpha maps)
+
+  m_Texture->SetActive();
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  
+  
+  m_bUseTexture = true;
+
+
+  return true;
+
+}*/
+
+
+void CCCParticleSystem::Render()
+{
+  //the calling method must switch on texturing!
+
+  if (m_bUseTexture)
+  {
+   // m_Texture->SetActive();
+    //Calculate the "billboarding vectors" (the particles only store their positions, but we need quadrangles!)
+    switch (m_iBillboarding)
+    {
+    case BILLBOARDING_NONE:
+      {
+        //independent from camera / view direction
+        m_BillboardedX = F3dVector(1.0f,0.0f,0.0f);
+        m_BillboardedY = F3dVector(0.0f,1.0f,0.0f);
+        break;
+      }
+    case BILLBOARDING_PERPTOVIEWDIR:
+      {
+        //Retrieve the up and right vector from the modelview matrix:
+        float fModelviewMatrix[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, fModelviewMatrix);
+
+        //Assign the x-Vector for billboarding:
+        m_BillboardedX = F3dVector(fModelviewMatrix[0], fModelviewMatrix[4], fModelviewMatrix[8]);
+
+        //Assign the y-Vector for billboarding:
+        m_BillboardedY = F3dVector(fModelviewMatrix[1], fModelviewMatrix[5], fModelviewMatrix[9]);
+        break;
+      }
+    case BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL:
+      {
+        //Retrieve the right vector from the modelview matrix:
+        float fModelviewMatrix[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, fModelviewMatrix);
+
+        //Assign the x-Vector for billboarding:
+        m_BillboardedX = F3dVector(fModelviewMatrix[0], fModelviewMatrix[4], fModelviewMatrix[8]);
+
+        //Assign the y-Vector:
+        m_BillboardedY = F3dVector(0.0f,1.0f,0.0f);       
+        break;
+      }
+    }
+  }
+  else
+  {
+    glGetFloatv(GL_POINT_SIZE,&m_fCurrentPointSize);
+  }
+  for (int i = 0; i < m_iMaxParticles; i++)
+  {
+    if (m_pParticles[i].m_bIsAlive)
+      m_pParticles[i].Render();
+  }
+}
+
+CCCParticleSystem g_ParticleSystem1;
+clock_t g_iLastRenderTime;
+
+void InitParticles()
+{
+
+//INIT SYSTEM 2 (POINTS, FIREWORK)
+  g_ParticleSystem1.Initialize(800);  //particle system must not have more than 800 particles
+  g_ParticleSystem1.m_iParticlesCreatedPerSec = 800;  //we create all particles in the first second of the system's life
+  g_ParticleSystem1.m_fMinDieAge = 2.5f;      //but the particles live longer than one second
+  g_ParticleSystem1.m_fMaxDieAge = 2.5f;      //-> this causes the system to "shoot" periodically
+    
+  g_ParticleSystem1.m_fCreationVariance = 1.0f;
+  g_ParticleSystem1.m_bRecreateWhenDied = true;
+  g_ParticleSystem1.SetCreationColor(1.0f,1.0f,1.0f,
+                0.5f,0.5f,0.5f);
+  g_ParticleSystem1.SetDieColor(0.0f,1.0f,0.0f,
+                 0.0f,0.3f,0.0f);
+  g_ParticleSystem1.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
+  g_ParticleSystem1.SetEmitter(0.8f,0.0f,0.0f,
+                0.02f,0.0f,0.02f);
+  g_ParticleSystem1.SetAcceleration(F3dVector(0.0f,-1.0f,0.0f),0.83f,1.4f);
+  g_ParticleSystem1.SetSizeValues(3.0f,3.0f,4.0f,4.0f);
+  g_ParticleSystem1.m_fMaxEmitSpeed = 0.82f;
+  g_ParticleSystem1.m_fMinEmitSpeed = 1.3f;
+  g_ParticleSystem1.SetEmissionDirection(-1.0f,2.0f,0.0f,
+                    0.5f,0.5f,0.5f);
+
+  g_ParticleSystem1.m_bParticlesLeaveSystem = true;
+
+}
+
+
+
 ///////////////////////////////////////////////////
 
 
@@ -2666,17 +3398,31 @@ void display()
    glPopMatrix();
 }
 
+//partical engine
+clock_t iNowTime = clock();
+float timePassed = (float)(iNowTime- g_iLastRenderTime)/CLOCKS_PER_SEC;
+g_ParticleSystem1.UpdateSystem(timePassed);
+g_iLastRenderTime = iNowTime;
+float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
+  float xDist = Ex - g_ParticleSystem1.m_EmitterPosition.x;
+  float CamDistToEmitter = sqrt(SQR(zDist)+SQR(xDist));
+  if (CamDistToEmitter < 0.2f) //avoid too big particles
+    CamDistToEmitter = 0.2f;
+  glPointSize(1.0f/CamDistToEmitter);
+  g_ParticleSystem1.Render();
    //  Draw scene
 
  glScalef(2*scale,2*scale,2*scale);
  glTranslatef(-25,0,0);
+ 
+
  /*glPushMatrix();
  glScalef(0.45,0.45,0.45);
    glTranslatef(48.0,0.0,0.0);
    drawBridge();
    glPopMatrix();*/
 
- glPushMatrix();
+ /*glPushMatrix();
  glScalef(0.8,0.8,0.8);
  glTranslatef(40.0,0.0,-5.0);
  drawCourt();
@@ -2853,7 +3599,7 @@ glPushMatrix();
    glPushMatrix();
    glTranslatef(-15.0,0.0,-15.0);
    drawGround();
-   glPopMatrix();
+   glPopMatrix();*/
 
    
 
@@ -3137,6 +3883,8 @@ int main(int argc,char* argv[])
 
   //initialize generation of random numbers:
   srand((unsigned)time(NULL));
+  InitParticles();
+
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
@@ -3157,6 +3905,8 @@ int main(int argc,char* argv[])
    texture[9] = LoadTexBMP("10.bmp");
    sky[0] = LoadTexBMP("sky0.bmp");
    sky[1] = LoadTexBMP("sky1.bmp");
+
+   g_iLastRenderTime=clock();
 
    ErrCheck("init");
    glutMainLoop();
