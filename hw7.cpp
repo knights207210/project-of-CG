@@ -3831,6 +3831,12 @@ void special(int key,int x,int y)
       Ez += scale*((float)Cos(zh) * speed);
       Ex -= scale*((float)Sin(zh) * speed);
    }
+   else if(key == GLUT_KEY_F9 && mode_project==2)
+      Ey += scale*speed;
+    else if(key == GLUT_KEY_F10 && mode_project==2)
+      Ey -= scale*speed;
+
+
    //  Keep angles to +/-360 degrees
    th %= 360;
    ph %= 360;
