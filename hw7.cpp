@@ -63,6 +63,7 @@ float speed=0.5;
 int    sky[2];   //  Sky textures
 int box=0;
 int firework=1;
+int fire;
 
 //initialized point view
 
@@ -398,7 +399,7 @@ public:  //The values how to emit a particle must be public because the particle
 
   bool      Initialize(int iNumParticles);    //reserves space for the particles
 
-  bool      LoadTextureFromFile(char * Filename);
+  bool      LoadTextureFromFile();
 
 //*************************************
 // FUNCTIONS TO UPDATE/RENDER THE SYSTEM
@@ -542,6 +543,7 @@ void CCCParticle::Render()
     color[2] = m_Color.z;
     color[3] = m_fAlpha;
     glColor4fv(&color[0]);
+    gluBuild2DMipmaps( GL_TEXTURE_2D, 4,5,5,GL_RGBA,GL_UNSIGNED_BYTE,color);
 
     SF3dVector RotatedX = m_ParentSystem->m_BillboardedX;
     SF3dVector RotatedY = m_ParentSystem->m_BillboardedY;
@@ -803,26 +805,16 @@ void CCCParticleSystem::UpdateSystem(float timePassed)
   
 }
 
-/*bool CCCParticleSystem::LoadTextureFromFile(char * Filename)
-{
-  //Create the texture pointer:
-  m_Texture = new COGLTexture;
+bool CCCParticleSystem::LoadTextureFromFile()
+{ 
+  glBindTexture( GL_TEXTURE_2D, fire);
 
-  if (m_Texture == NULL) return false;
-
-  if (!m_Texture->LoadFromTGA(Filename,NULL,true)) return false;  //pass NULL as 2. param (only required if you want to combine rgb and alpha maps)
-
-  m_Texture->SetActive();
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  
-  
   m_bUseTexture = true;
 
 
   return true;
 
-}*/
+}
 
 
 void CCCParticleSystem::Render()
@@ -831,6 +823,7 @@ void CCCParticleSystem::Render()
 
   if (m_bUseTexture)
   {
+    glBindTexture( GL_TEXTURE_2D, fire);
    // m_Texture->SetActive();
     //Calculate the "billboarding vectors" (the particles only store their positions, but we need quadrangles!)
     switch (m_iBillboarding)
@@ -882,7 +875,10 @@ void CCCParticleSystem::Render()
 }
 
 CCCParticleSystem g_ParticleSystem1;
+CCCParticleSystem g_ParticleSystem2;
+CCCParticleSystem g_ParticleSystem4;
 clock_t g_iLastRenderTime;
+clock_t g_iLastRenderTime1;
 
 void InitParticles()
 {
@@ -910,6 +906,80 @@ void InitParticles()
                     0.5f,0.5f,0.5f);
 
   g_ParticleSystem1.m_bParticlesLeaveSystem = true;
+
+
+/*g_ParticleSystem2.Initialize(800);  //particle system must not have more than 800 particles
+  g_ParticleSystem2.m_iParticlesCreatedPerSec = 800;  //we create all particles in the first second of the system's life
+  g_ParticleSystem2.m_fMinDieAge = 2.5f;      //but the particles live longer than one second
+  g_ParticleSystem2.m_fMaxDieAge = 2.5f;      //-> this causes the system to "shoot" periodically
+    
+  g_ParticleSystem2.m_fCreationVariance = 1.0f;
+  g_ParticleSystem2.m_bRecreateWhenDied = true;
+  g_ParticleSystem2.SetCreationColor(1.0f,1.0f,1.0f,
+                0.5f,0.5f,0.5f);
+  g_ParticleSystem2.SetDieColor(0.0f,1.0f,0.0f,
+                 0.0f,0.3f,0.0f);
+  g_ParticleSystem2.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
+  g_ParticleSystem2.SetEmitter(Ex+10*Sin(zh),Ey-1.0+50*Sin(theta+10),Ez-10*Cos(zh),
+                0.02f,0.0f,0.02f);
+  g_ParticleSystem2.SetAcceleration(F3dVector(0.0f,-1.0f,0.0f),0.83f,1.4f);
+  g_ParticleSystem2.SetSizeValues(3.0f,3.0f,4.0f,4.0f);
+  g_ParticleSystem2.m_fMaxEmitSpeed = 0.82f;
+  g_ParticleSystem2.m_fMinEmitSpeed = 1.3f;
+  g_ParticleSystem2.SetEmissionDirection(-1.0f,2.0f,0.0f,
+                    0.5f,0.5f,0.5f);
+
+  g_ParticleSystem2.m_bParticlesLeaveSystem = true;*/
+
+  g_ParticleSystem2.Initialize(300);
+  g_ParticleSystem2.m_iParticlesCreatedPerSec = 300;
+  g_ParticleSystem2.m_fCreationVariance = 0.0f;
+  g_ParticleSystem2.m_bRecreateWhenDied = true;
+  g_ParticleSystem2.m_fMinDieAge = 0.5f;
+  g_ParticleSystem2.m_fMaxDieAge = 1.5f;
+  g_ParticleSystem2.SetCreationColor(1.0f,0.0f,0.0f,
+                  1.0f,0.5f,0.0f);
+  g_ParticleSystem2.SetDieColor(1.0f,0.0f,0.0f,
+                    1.0f,0.5f,0.0f);
+
+  g_ParticleSystem2.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
+  g_ParticleSystem2.SetEmitter(0.0f,0.0f,0.5f,
+                0.3f,0.0f,0.3f);
+  g_ParticleSystem2.SetAcceleration(F3dVector(0.0f,1.0f,0.0f),0.3f,0.4f);
+  g_ParticleSystem2.SetSizeValues(0.04f,0.08f,0.06f,0.12f);
+  g_ParticleSystem2.m_fMaxEmitSpeed = 0.1f;
+  g_ParticleSystem2.m_fMinEmitSpeed = 0.2f;
+  g_ParticleSystem2.SetEmissionDirection(0.0f,1.0f,0.0f,
+                    0.08f,0.5f,0.08f);
+  g_ParticleSystem2.m_bParticlesLeaveSystem = true;
+  g_ParticleSystem2.SetSpinSpeed(-0.82*PI,0.82*PI);
+  g_ParticleSystem2.m_iBillboarding = BILLBOARDING_PERPTOVIEWDIR;
+  g_ParticleSystem2.LoadTextureFromFile();
+
+
+  /*g_ParticleSystem4.Initialize(150);
+  g_ParticleSystem4.m_iParticlesCreatedPerSec = 50;
+  g_ParticleSystem4.m_fCreationVariance = 0.0f;
+  g_ParticleSystem4.m_bRecreateWhenDied = true;
+  g_ParticleSystem4.m_fMinDieAge = 2.5f;
+  g_ParticleSystem4.m_fMaxDieAge = 3.5f;
+  g_ParticleSystem4.SetCreationColor(0.1f,0.1f,0.1f,
+                  0.2f,0.2f,0.2f);
+  g_ParticleSystem4.SetDieColor(0.0f,0.0f,0.0f,
+                 0.0f,0.0f,0.0f);
+
+  g_ParticleSystem4.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
+  g_ParticleSystem4.SetEmitter(-0.8f,0.0f,0.0f,
+                0.0f,0.0f,0.0f);
+  g_ParticleSystem4.SetAcceleration(F3dVector(0.0f,1.0f,0.0f),0.3f,0.4f);
+  g_ParticleSystem4.SetSizeValues(0.0f,0.0f,1.12f,1.22f);
+  g_ParticleSystem4.m_fMaxEmitSpeed = 0.01f;
+  g_ParticleSystem4.m_fMinEmitSpeed = 0.04f;
+  g_ParticleSystem4.SetEmissionDirection(0.0f,1.0f,0.0f,
+                       0.08f,0.5f,0.08f);
+  g_ParticleSystem4.m_bParticlesLeaveSystem = true;
+  g_ParticleSystem4.m_iBillboarding = BILLBOARDING_PERPTOVIEWDIR;
+  g_ParticleSystem4.LoadTextureFromFile();*/
 
 }
 
@@ -3363,10 +3433,11 @@ void display()
         float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
         //  Light position
         float Position[]  = {distance*Cos(zh_l),ylight,distance*Sin(zh_l),1.0};
+        float Position_fire[] = {0.0,0.0,0.5};
         //  Draw light position as ball (still no lighting here)
         glColor3f(1,1,1);
         ball(Position[0],Position[1],Position[2] , 0.1);
-        //  OpenGL should normalize normal vectors
+        ball(Position_fire[0],Position_fire[1],Position_fire[2] , 0.01);        //  OpenGL should normalize normal vectors
         glEnable(GL_NORMALIZE);
         //  Enable lighting
         glEnable(GL_LIGHTING);
@@ -3404,7 +3475,7 @@ void display()
 
 
 //partical engine
-if(firework){
+/*if(firework){
 clock_t iNowTime = clock();
 float timePassed = (float)(iNowTime- g_iLastRenderTime)/CLOCKS_PER_SEC;
 g_ParticleSystem1.UpdateSystem(timePassed);
@@ -3416,7 +3487,28 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
     CamDistToEmitter = 0.2f;
   glPointSize(1.0f/CamDistToEmitter);
   g_ParticleSystem1.Render();
-}
+}*/
+
+clock_t iNowTime1 = clock();
+float timePassed1 = (float)(iNowTime1 - g_iLastRenderTime1)/CLOCKS_PER_SEC;
+g_ParticleSystem2.UpdateSystem(timePassed1);
+  g_ParticleSystem4.UpdateSystem(timePassed1);
+  g_iLastRenderTime1 = iNowTime1;
+  //glEnable(GL_TEXTURE_2D);
+  float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
+  float xDist = Ex - g_ParticleSystem1.m_EmitterPosition.x;
+  float CamDistToEmitter = sqrt(SQR(zDist)+SQR(xDist));
+  if (CamDistToEmitter < 0.2f) //avoid too big particles
+    CamDistToEmitter = 0.2f;
+  glPointSize(1.0f/CamDistToEmitter);
+
+  glEnable(GL_TEXTURE_2D);
+  g_ParticleSystem2.Render();
+  g_ParticleSystem4.Render();
+  glDisable(GL_TEXTURE_2D);
+
+
+
    //  Draw scene
 
  glScalef(2*scale,2*scale,2*scale);
@@ -3916,8 +4008,10 @@ int main(int argc,char* argv[])
    texture[9] = LoadTexBMP("10.bmp");
    sky[0] = LoadTexBMP("sky0.bmp");
    sky[1] = LoadTexBMP("sky1.bmp");
+   fire = LoadTexBMP("fire.bmp");
 
    g_iLastRenderTime=clock();
+   g_iLastRenderTime1=clock();
 
    ErrCheck("init");
    glutMainLoop();
