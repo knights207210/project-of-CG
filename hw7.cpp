@@ -2,8 +2,7 @@
  *  Project
  *
  *
- *  Key bindings:
- *  0      mode 0: Display the 3D scene in orthogonal mode
+ Key bindings:
  *  1      mode 1: Display the 3D scene in projection mode
  *  2      mode 2: Display the 3D scene with first person navigation
  *  l          Toggles lighting
@@ -15,20 +14,25 @@
  *  F1         Toggle smooth/flat shading
  *  F2         Toggle local viewer mode
  *  F3         Toggle light distance (1/5)
+ *  F9/F10     Change the position of eye up and down in first person mode.
  *  m          Toggles light movement
  *  []         Lower/rise light
- *  </>        Change the positions of light source mannually while the light movement is stopped
- *  p          Toggles ortogonal/perspective projection
+ *  </>        Change the positions of light source manually while the light 
+          movement is stopped
  *  +/-        Change field of view of perspective
  *  u/U        Make the first person navigation up and down 
- *  b/B        Change the scale of the scene(b: larger; B: smaller)
+ *  b/B        Change the scale of the scene in first person navigation(b: larger; B:     smaller)
+ *  f/F        When in the first person mode, use the wand to start the firework
+ *  w/W        When in the first person mode, go to the place where the water simulation is
+ *  q/Q        When in the first person mode, go to the place where has the fire simulation and indoor scene
+ *  k/K        Change between the day/night mode
  *  x          Toggle axes
- *  arrows     Change view angle(<-/->: rotate around Y axis; up/down: rotate around X axis) when in mode 0 and mode 1
+ *  arrows     Change view angle(<-/->: rotate around Y axis; up/down: rotate around X axis) when in mode 1
                Change the position and view angle(<-/->, make the first person navigation look left and right; up and down, 
                make the first person navigation move forward and backward)
- *  F5/F6      Zoom in and out for orthogonal
  *  r          Reset view angle
- *  ESC        Exit
+ *  ESC        Exit 
+
  */
 #include "CSCIx229.h"
 #include <vector>
@@ -62,7 +66,7 @@ int plane=1;
 float speed=0.5;
 int    sky[2];   //  Sky textures
 int box=0;
-int firework=1;
+int firework=0;
 int fire;
 
 //initialized point view
@@ -79,7 +83,7 @@ float theta=0;
 
 int axes=1;       //  Display axes
 int mode=0;       //  Projection mode
-int mode_project =0;
+int mode_project =1;
 int move=1;       //  Move light
 int th=160;         //  Azimuth of view angle
 int ph=35;         //  Elevation of view angle
@@ -104,7 +108,7 @@ float ylight  =   0;  // Elevation of light
 int numberOfTrees = 30;
 int obj;
 
-unsigned int texture[10];  //texture names
+unsigned int texture[11];  //texture names
 
 struct SOscillator
 {
@@ -896,13 +900,13 @@ void InitParticles()
   g_ParticleSystem1.SetDieColor(0.0f,1.0f,0.0f,
                  0.0f,0.3f,0.0f);
   g_ParticleSystem1.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
-  g_ParticleSystem1.SetEmitter(Ex+10*Sin(zh),Ey-1.0+50*Sin(theta+10),Ez-10*Cos(zh),
+  g_ParticleSystem1.SetEmitter(-10.0f,-0.0f,0.0f,
                 0.02f,0.0f,0.02f);
   g_ParticleSystem1.SetAcceleration(F3dVector(0.0f,-1.0f,0.0f),0.83f,1.4f);
   g_ParticleSystem1.SetSizeValues(3.0f,3.0f,4.0f,4.0f);
   g_ParticleSystem1.m_fMaxEmitSpeed = 0.82f;
   g_ParticleSystem1.m_fMinEmitSpeed = 1.3f;
-  g_ParticleSystem1.SetEmissionDirection(-1.0f,2.0f,0.0f,
+  g_ParticleSystem1.SetEmissionDirection(0.1f,2.0f,0.1f,
                     0.5f,0.5f,0.5f);
 
   g_ParticleSystem1.m_bParticlesLeaveSystem = true;
@@ -1324,7 +1328,7 @@ static void Sky1(double D)
    glDisable(GL_TEXTURE_2D);
 }
 
-void drawCourtTower(){
+void drawCourtTower(float R, float G, float B){
     
   float white[] = {1,1,1,1};
    float Emission[]  = {0.0,0.0,0.01*emission,1.0};
@@ -1337,23 +1341,23 @@ void drawCourtTower(){
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.867,0.719,0.527);
+   glColor3f(R,G,B);
    glBindTexture(GL_TEXTURE_2D,texture[3]);
 
 
    glBegin(GL_QUADS);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(0.0,0.0,-1.0);
    
-   glTexCoord2f(0,0); glVertex3f(0.0,0.0,0.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,0.0,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(2.0,12.0,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(0.0,12.0,0.0);
+   glTexCoord2f(0.4,0); glVertex3f(0.0,0.0,0.0);
+   glTexCoord2f(0,0); glVertex3f(2.0,0.0,0.0);
+   glTexCoord2f(0,1.5); glVertex3f(2.0,12.0,0.0);
+   glTexCoord2f(0.4,1.5);glVertex3f(0.0,12.0,0.0);
    
    
    glEnd();
 
    glBegin(GL_QUADS);
-   glNormal3f(0.0,0.0,-1.0);
+   glNormal3f(1.0,0.0,0.0);
    glTexCoord2f(3.5/4,0);glVertex3f(2.0,0.0,0.0);
    glTexCoord2f(4.5/4,0);glVertex3f(2.0,0.0,2.0);
    glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(2.0,12.0,2.0);
@@ -1361,7 +1365,7 @@ void drawCourtTower(){
    glEnd();
 
    glBegin(GL_QUADS);
-   glNormal3f(0.0,0.0,-1.0);
+   glNormal3f(0.0,0.0,1.0);
    glTexCoord2f(3.5/4,0);glVertex3f(2.0,0.0,2.0);
    glTexCoord2f(4.5/4,0);glVertex3f(0.0,0.0,2.0);
    glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(0.0,12.0,2.0);
@@ -1369,7 +1373,7 @@ void drawCourtTower(){
    glEnd();
 
    glBegin(GL_QUADS);
-   glNormal3f(0.0,0.0,-1.0);
+   glNormal3f(-1.0,0.0,0.0);
    glTexCoord2f(3.5/4,0);glVertex3f(0.0,0.0,2.0);
    glTexCoord2f(4.5/4,0);glVertex3f(0.0,0.0,0.0);
    glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(0.0,12.0,0.0);
@@ -1383,76 +1387,76 @@ void drawCourtTower(){
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.867,0.719,0.527);
+   glColor3f(R,G,B);
    glBindTexture(GL_TEXTURE_2D,texture[3]);
 
 
    glBegin(GL_POLYGON);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(1.0,0.0,0.0);
    
    glTexCoord2f(0,0); glVertex3f(2.0,12.0,2.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,12.0,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(2.0,14.0,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(2.0,14.0,0.4);
-   glTexCoord2f(1*1.5,0); glVertex3f(2.0,12.0,2.0);
+   glTexCoord2f(1.0/4,0); glVertex3f(2.0,12.0,0.0);
+   glTexCoord2f(1.0/4,1.0/4); glVertex3f(2.0,14.0,0.0);
+   glTexCoord2f(0.8/4,1.0/4); glVertex3f(2.0,14.0,0.4);
+   //glTexCoord2f(1*1.5,0); glVertex3f(2.0,12.0,2.0);
    glEnd();
 
    glBegin(GL_POLYGON);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(1.0,0.0,0.0);
    
    glTexCoord2f(0,0); glVertex3f(2.0,14.0,0.4);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,14.0,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(2.0,15.5,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(2.0,15.5,0.4);
+   glTexCoord2f(1.0/4,0); glVertex3f(2.0,14.0,0.0);
+   glTexCoord2f(1.0/4,1.0/4); glVertex3f(2.0,15.5,0.0);
+   glTexCoord2f(0,1.0/4); glVertex3f(2.0,15.5,0.4);
    glEnd();
 
    glBegin(GL_POLYGON);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(1.0,0.0,0.0);
    
-   glTexCoord2f(0,0); glVertex3f(2.0,15.5,0.4);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,16.5,2.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(2.0,16.5,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(2.0,15.5,0.0);
-   glTexCoord2f(0,0); glVertex3f(2.0,15.5,0.4);
+   glTexCoord2f(0.8/4,1.0/4); glVertex3f(2.0,15.5,0.4);
+   glTexCoord2f(0,0); glVertex3f(2.0,16.5,2.0);
+   glTexCoord2f(1.0/4,0); glVertex3f(2.0,16.5,0.0);
+   glTexCoord2f(0.0,1.0/4); glVertex3f(2.0,15.5,0.0);
+   //glTexCoord2f(0,0); glVertex3f(2.0,15.5,0.4);
    glEnd();
 
    glBegin(GL_POLYGON);
    glNormal3f(-1.0,0.0,0.0);
    
    glTexCoord2f(0,0); glVertex3f(0.0,12.0,2.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(0.0,12.0,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(0.0,14.0,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(0.0,14.0,0.4);
-   glTexCoord2f(1*1.5,0); glVertex3f(0.0,12.0,2.0);
+   glTexCoord2f(1.0/4,0); glVertex3f(0.0,12.0,0.0);
+   glTexCoord2f(1.0/4,1.0/4); glVertex3f(0.0,14.0,0.0);
+   glTexCoord2f(0,0.8/4); glVertex3f(0.0,14.0,0.4);
+   //glTexCoord2f(1*1.5,0); glVertex3f(0.0,12.0,2.0);
    glEnd();
 
    glBegin(GL_POLYGON);
    glNormal3f(-1.0,0.0,0.0);
    
    glTexCoord2f(0,0); glVertex3f(0.0,14.0,0.4);
-   glTexCoord2f(0,1*1.5); glVertex3f(0.0,14.0,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(0.0,15.5,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(0.0,15.5,0.4);
+   glTexCoord2f(1.0/4,0); glVertex3f(0.0,14.0,0.0);
+   glTexCoord2f(1.0/4,1.0/4); glVertex3f(0.0,15.5,0.0);
+   glTexCoord2f(0,1.0/4); glVertex3f(0.0,15.5,0.4);
    glEnd();
 
    glBegin(GL_POLYGON);
    glNormal3f(-1.0,0.0,0.0);
    
-   glTexCoord2f(0,0); glVertex3f(0.0,15.5,0.4);
-   glTexCoord2f(0,1*1.5); glVertex3f(0.0,16.5,2.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(0.0,16.5,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(0.0,15.5,0.0);
-   glTexCoord2f(0,0); glVertex3f(0.0,15.5,0.4);
+   glTexCoord2f(0.8/4,1.0/4); glVertex3f(0.0,15.5,0.4);
+   glTexCoord2f(0,0); glVertex3f(0.0,16.5,2.0);
+   glTexCoord2f(1.0/4,1.0/4); glVertex3f(0.0,16.5,0.0);
+   glTexCoord2f(0,1.0/4); glVertex3f(0.0,15.5,0.0);
+  // glTexCoord2f(0,0); glVertex3f(0.0,15.5,0.4);
    glEnd();
 
    glBegin(GL_POLYGON);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(0.0,0.0,-1.0);
    
    glTexCoord2f(0,0); glVertex3f(0.0,12.0,0.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,12.0,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(2.0,16.5,0.0);
-   glTexCoord2f(1*1.5,0); glVertex3f(0.0,16.5,0.0);
-   glTexCoord2f(0,0); glVertex3f(0.0,15.5,0.4);
+   glTexCoord2f(0.4,0); glVertex3f(2.0,12.0,0.0);
+   glTexCoord2f(0.4,0.7); glVertex3f(2.0,16.5,0.0);
+   glTexCoord2f(0,0.7); glVertex3f(0.0,16.5,0.0);
+  // glTexCoord2f(0,0); glVertex3f(0.0,15.5,0.4);
    glColor3f(1.0,1.0,1.0);
    glEnd();
 
@@ -1461,42 +1465,55 @@ void drawCourtTower(){
 
    //draw the pointer
    glPushMatrix();
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.867,0.719,0.527);
-   glBindTexture(GL_TEXTURE_2D,texture[3]);
+   //glEnable(GL_TEXTURE_2D);
+   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(R,G,B);
+   //glBindTexture(GL_TEXTURE_2D,texture[3]);
 
 
    glBegin(GL_TRIANGLES);
-   glNormal3f(-1.0,0.0,0.0);
+   //float YtoH = (1.0-0.0) / (0.0-(18.5-16.5)) * (1.0-0.0);
+   glNormal3f(0.0,2.0,-4.0);
    
-   glTexCoord2f(0,0); glVertex3f(0.0,16.5,0.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,16.5,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(1.0,18.5,1.0);
+   //glTexCoord2f(0,0); 
+   glVertex3f(0.0,16.5,0.0);
+   //glTexCoord2f(0,1*1.5); 
+   glVertex3f(2.0,16.5,0.0);
+   //glTexCoord2f(1*1.5,1*1.5); 
+   glVertex3f(1.0,18.5,1.0);
    glEnd();
 
    glBegin(GL_TRIANGLES);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(4.0,2.0,0.0);
    
-   glTexCoord2f(0,0); glVertex3f(2.0,16.5,0.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(2.0,16.5,2.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(1.0,18.5,1.0);
+   //glTexCoord2f(0,0); 
+   glVertex3f(2.0,16.5,0.0);
+   //glTexCoord2f(0,1*1.5); 
+   glVertex3f(2.0,16.5,2.0);
+   //glTexCoord2f(1*1.5,1*1.5); 
+   glVertex3f(1.0,18.5,1.0);
    glEnd();
 
    glBegin(GL_TRIANGLES);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(0.0,2.0,4.0);
    
-   glTexCoord2f(0,0); glVertex3f(2.0,16.5,2.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(0.0,16.5,2.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(1.0,18.5,1.0);
+   //glTexCoord2f(0,0); 
+   glVertex3f(2.0,16.5,2.0);
+   //glTexCoord2f(0,1*1.5); 
+   glVertex3f(0.0,16.5,2.0);
+   //glTexCoord2f(1*1.5,1*1.5); 
+   glVertex3f(1.0,18.5,1.0);
    glEnd();
 
   glBegin(GL_TRIANGLES);
-   glNormal3f(-1.0,0.0,0.0);
+   glNormal3f(-4.0,2.0,0.0);
    
-   glTexCoord2f(0,0); glVertex3f(0.0,16.5,2.0);
-   glTexCoord2f(0,1*1.5); glVertex3f(0.0,16.5,0.0);
-   glTexCoord2f(1*1.5,1*1.5); glVertex3f(1.0,18.5,1.0);
+   //glTexCoord2f(0,0); 
+   glVertex3f(0.0,16.5,2.0);
+   //glTexCoord2f(0,1*1.5); 
+   glVertex3f(0.0,16.5,0.0);
+   //glTexCoord2f(1*1.5,1*1.5); 
+   glVertex3f(1.0,18.5,1.0);
    glEnd();
    glColor3f(1.0,1.0,1.0);
    glPopMatrix();
@@ -1504,10 +1521,10 @@ void drawCourtTower(){
 
    //pointer
    glPushMatrix();
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.683,0.930,0.930);
-   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   //glEnable(GL_TEXTURE_2D);
+   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(R,G,B);
+   //glBindTexture(GL_TEXTURE_2D,texture[2]);
    
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
@@ -1522,20 +1539,24 @@ void drawCourtTower(){
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*0.1*3,z*0.1*2); glVertex3f((x)*0.1+1,18.5,(z)*0.1+1);
+         //glTexCoord2f(x*0.1*3,z*0.1*2); 
+         glVertex3f((x)*0.1+1,18.5,(z)*0.1+1);
          //same x,z and NVect:
-         glTexCoord2f(x*3,z*2); glVertex3f(1.0,20.0,1.0);
+         //glTexCoord2f(x*3,z*2); 
+         glVertex3f(1.0,20.0,1.0);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*0.1*3,z*0.1*2); glVertex3f((x)*0.1+1,18.5,(z)*0.1+1);
+      //glTexCoord2f(x*0.1*3,z*0.1*2); 
+      glVertex3f((x)*0.1+1,18.5,(z)*0.1+1);
       //same x,z and NVect:
-      glTexCoord2f(x*3,z*2); glVertex3f(1.0,20.0,1.0);
+      //glTexCoord2f(x*3,z*2); 
+      glVertex3f(1.0,20.0,1.0);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
-      glDisable(GL_TEXTURE_2D);
+      //glDisable(GL_TEXTURE_2D);
 }
 
 /*
@@ -1563,6 +1584,7 @@ void drawTorus(double r, double c,int rSeg, int cSeg)
 
   for (int i = 0; i < rSeg; i++) {
     glBegin(GL_QUAD_STRIP);
+    //glNormal3f(0.0,0.0,-1.0);
     for (int j = 0; j <= cSeg; j++) {
       for (int k = 0; k <= 1; k++) {
         double s = (i + k) % rSeg + 0.5;
@@ -1642,41 +1664,42 @@ void drawCourt(){
  glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.867,0.719,0.527);
+   glColor3f(0.0,1.0,0.0);
    glBindTexture(GL_TEXTURE_2D,texture[3]);
    glScalef(0.5,0.0,1.0);
    //draw the ground
-      glBegin(GL_TRIANGLES);
+
+      //glBegin(GL_TRIANGLES);
       int i;
       float x,z;
-      for ( i = 0; i < NumOfEdges-1; i++)
+      /*for ( i = 0; i < NumOfEdges-1; i++)
       {  
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,-1.0,0.0);
+         glNormal3f(0.0,1.0,0.0);
          glVertex3f(0.0,0.0,0.0);
          glVertex3f(x*20,0.0,z*20);
 
          x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
          z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,-1.0,0.0);
+         glNormal3f(0.0,1.0,0.0);
          glVertex3f(x*20,0.0,z*20);
       }
       x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,-1.0,0.0);
+      glNormal3f(0.0,1.0,0.0);
       glVertex3f(0.0,0.0,0.0);
       glVertex3f(x*20,0.0,z*20);
       x = Cos(1.0/(float)NumOfEdges * 360.0);
       z = Sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,-1.0,0.0);
+      glNormal3f(0.0,1.0,0.0);
       glVertex3f(x*20,0.0,z*20);
       glColor3f(1.0,1.0,1.0);
-      glEnd();
+      glEnd();*/
       glPopMatrix();
       glDisable(GL_TEXTURE_2D);
 
-      glPushMatrix();
+     glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
    glColor3f(0.867,0.719,0.527);
@@ -1689,25 +1712,25 @@ void drawCourt(){
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(0.0,-1.0,0.0);
-         glVertex3f(x*20,0.0,z*20);
-         glVertex3f(x*20,5.0,z*20);
+         glTexCoord2f(0.0,0.0);glVertex3f(x*20,0.0,z*20);
+         glTexCoord2f(0.0,1.0/4);glVertex3f(x*20,5.0,z*20);
 
          x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
          z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
          glNormal3f(0.0,-1.0,0.0);
-         glVertex3f(x*20,5.0,z*20);
-         glVertex3f(x*20,0.0,z*20);
+         glTexCoord2f(1.0/4,1.0/4);glVertex3f(x*20,5.0,z*20);
+         glTexCoord2f(1.0/4,0.0);glVertex3f(x*20,0.0,z*20);
       }
       x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(0.0,-1.0,0.0);
-      glVertex3f(x*20,0.0,z*20);
-      glVertex3f(x*20,5.0,z*20);
+      glTexCoord2f(0.0,0.0);glVertex3f(x*20,0.0,z*20);
+      glTexCoord2f(0.0,1.0/4);glVertex3f(x*20,5.0,z*20);
       x = Cos(1.0/(float)NumOfEdges * 360.0);
       z = Sin(1.0/(float)NumOfEdges * 360.0);
       glNormal3f(0.0,-1.0,0.0);
-      glVertex3f(x*20,5.0,z*20);
-      glVertex3f(x*20,0.0,z*20);
+      glTexCoord2f(1.0/4,1.0/4);glVertex3f(x*20,5.0,z*20);
+      glTexCoord2f(1.0/4,0.0);glVertex3f(x*20,0.0,z*20);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -1717,84 +1740,84 @@ void drawCourt(){
       glTranslatef(10.0,0.0,0.0);
       glRotatef(270,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(1.0,0.0,0.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(-10.0,0.0,1.5);
       glRotatef(90,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(1.0,0.0,0.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(1.5,0.0,20.0);
       glRotatef(180,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(0.0,1.0,0.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(0.0,0.0,-20.0);
       glRotatef(0,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(0.0,1.0,0.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(7.0,0.0,15.0);
       glRotatef(210,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(0.0,0.0,1.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(-7.0,0.0,-14.5);
       glRotatef(20,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(0.0,0.0,1.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(6.3,0.0,-15.0);
       glRotatef(-40,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(1.0,1.0,0.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(-5.9,0.0,15.8);
       glRotatef(140,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(1.0,1.0,0.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(9.5,0.0,7.5);
       glRotatef(220,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(1.0,0.0,1.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(-9.5,0.0,-7.5);
       glRotatef(50,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(1.0,0.0,1.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(8.8,0.0,-7.5);
       glRotatef(-50,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(0.0,1.0,1.0);
       glPopMatrix();
 
       glPushMatrix();
       glTranslatef(-8.5,0.0,8.4);
       glRotatef(-220,0,1,0);
       glScalef(0.8,0.8,0.8);
-      drawCourtTower();
+      drawCourtTower(0.0,1.0,1.0);
       glPopMatrix();
 
       //draw court gate
@@ -1839,9 +1862,11 @@ void drawCourt(){
       glRotatef(0,0,1,0);
       glScalef(1.0,1.0,1.0);
       drawCourtGate();
+      //glColor3f(1.0,1.0,1.0);
       glPopMatrix();
 
       //draw marks
+      glColor3f(1.0,1.0,1.0);
       glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
@@ -1856,22 +1881,23 @@ void drawCourt(){
       {  
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,-1.0,0.0);
+         glNormal3f(0.0,1.0,0.0);
          glVertex3f(x*16,0.01,z*16);
 
          x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
          z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,-1.0,0.0);
+         glNormal3f(0.0,1.0,0.0);
          glVertex3f(x*16,0.01,z*16);
       }
       x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,-1.0,0.0);
+      glNormal3f(0.0,1.0,0.0);
       glVertex3f(x*16,0.01,z*16);
       x = Cos(1.0/(float)NumOfEdges * 360.0);
       z = Sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,-1.0,0.0);
+      glNormal3f(0.0,1.0,0.0);
       glVertex3f(x*16,0.01,z*16);
+      glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
       glDisable(GL_TEXTURE_2D);
@@ -1887,22 +1913,23 @@ void drawCourt(){
       {  
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,-1.0,0.0);
+         glNormal3f(0.0,1.0,0.0);
          glVertex3f(x*3,0.01,z*3);
 
          x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
          z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,-1.0,0.0);
+         glNormal3f(0.0,1.0,0.0);
          glVertex3f(x*3,0.01,z*3);
       }
       x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,-1.0,0.0);
+      glNormal3f(0.0,1.0,0.0);
       glVertex3f(x*3,0.01,z*3);
       x = Cos(1.0/(float)NumOfEdges * 360.0);
       z = Sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,-1.0,0.0);
+      glNormal3f(0.0,1.0,0.0);
       glVertex3f(x*3,0.01,z*3);
+      glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
       glDisable(GL_TEXTURE_2D);
@@ -1939,8 +1966,8 @@ void drawBranches(float branchLength, float pointx, float pointy, float pointz){
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.683,0.930,0.930);
-   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   glColor3f(0.543,0.270,0.074);
+   glBindTexture(GL_TEXTURE_2D,texture[10]);
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
       int i=0;
@@ -1953,16 +1980,16 @@ void drawBranches(float branchLength, float pointx, float pointy, float pointz){
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*0.5*3,z*0.5*2); glVertex3f(x*0.5,0.0,z*0.5);
+         glTexCoord2f((float)i/(float)NumOfEdges,0); glVertex3f(x*0.5,0.0,z*0.5);
          //same x,z and NVect:
-         glTexCoord2f(x*3,z*2); glVertex3f(pointx,pointy,pointz);
+         glTexCoord2f((float)i/(float)NumOfEdges,pointy); glVertex3f(pointx,pointy,pointz);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*0.5*3,z*0.5*2); glVertex3f(x*0.5,0.0,z*0.5);
+      glTexCoord2f((float)i/(float)NumOfEdges,0); glVertex3f(x*0.5,0.0,z*0.5);
       //same x,z and NVect:
-      glTexCoord2f(x*3,z*2); glVertex3f(pointx,pointy,pointz);
+      glTexCoord2f((float)i/(float)NumOfEdges,pointy); glVertex3f(pointx,pointy,pointz);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -1985,8 +2012,8 @@ void drawTree(int treeHeight, float r1, float r2){
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.683,0.930,0.930);
-   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   glColor3f(0.543,0.270,0.074);
+   glBindTexture(GL_TEXTURE_2D,texture[10]);
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
       int i=0;
@@ -1999,16 +2026,16 @@ void drawTree(int treeHeight, float r1, float r2){
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*r1*3,z*r1*2); glVertex3f(x*r1,0.0,z*r1);
+         glTexCoord2f((float)i/(float)NumOfEdges*4,0); glVertex3f(x*r1,0.0,z*r1);
          //same x,z and NVect:
-         glTexCoord2f(x*r2*3,z*r2*2); glVertex3f(x*r2,treeHeight,z*r2);
+         glTexCoord2f((float)i/(float)NumOfEdges*4,treeHeight); glVertex3f(x*r2,treeHeight,z*r2);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*r1*3,z*r1*2); glVertex3f(x*r1,0.0,z*r1);
+      glTexCoord2f((float)i/(float)NumOfEdges*4,0); glVertex3f(x*r1,0.0,z*r1);
       //same x,z and NVect:
-      glTexCoord2f(x*r2*3,z*r2*2); glVertex3f(x*r2,treeHeight,z*r2);
+      glTexCoord2f((float)i/(float)NumOfEdges*4,treeHeight); glVertex3f(x*r2,treeHeight,z*r2);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -2033,8 +2060,8 @@ void drawTree(int treeHeight, float r1, float r2){
        glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(0.683,0.930,0.930);
-   glBindTexture(GL_TEXTURE_2D,texture[2]);
+   glColor3f(0.543,0.270,0.074);
+   glBindTexture(GL_TEXTURE_2D,texture[10]);
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
       int i=0;
@@ -2047,16 +2074,16 @@ void drawTree(int treeHeight, float r1, float r2){
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord2f(x*r2*3,z*r2*2); glVertex3f(x*r2,treeHeight,z*r2);
+         glTexCoord2f((float)i/(float)NumOfEdges*2,0); glVertex3f(x*r2,treeHeight,z*r2);
          //same x,z and NVect:
-         glTexCoord2f(x*3,z*2); glVertex3f(0,treeHeight+treeHeight*0.1,0);
+         glTexCoord2f((float)i/(float)NumOfEdges*2,treeHeight*0.1); glVertex3f(0,treeHeight+treeHeight*0.1,0);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
       glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord2f(x*r*3,z*r*2); glVertex3f(x*r2,treeHeight,z*r2);
+      glTexCoord2f((float)i/(float)NumOfEdges*2,0); glVertex3f(x*r2,treeHeight,z*r2);
       //same x,z and NVect:
-      glTexCoord2f(x*3,z*2); glVertex3f(0,treeHeight+treeHeight*0.1,0);
+      glTexCoord2f((float)i/(float)NumOfEdges*2,treeHeight*0.1); glVertex3f(0,treeHeight+treeHeight*0.1,0);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -3404,11 +3431,11 @@ void display()
       double Ez = +2*dim*Cos(th)*Cos(ph);
       gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
    }
-   else if (mode_project==0)
+   /*else if (mode_project==0)
    {
          glRotated(ph,1,0,0);
          glRotated(th,0,1,0);
-   }
+   }*/
    else if (mode_project==2){
       // set parameters for glulookat()
     fov = 40;
@@ -3420,10 +3447,14 @@ void display()
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
 
-   if(box) 
+   if(box) {
     Sky(3.5*dim);
-   else
+    ambient=30;
+  }
+   else{
+    ambient = 0;
     Sky1(3.5*dim);
+  }
    //  Light switch
    if (light)
    {
@@ -3432,8 +3463,9 @@ void display()
         float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
         float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
         //  Light position
-        float Position[]  = {distance*Cos(zh_l),ylight,distance*Sin(zh_l),1.0};
-        float Position_fire[] = {0.0,0.0,0.5};
+        float Position[]  = {distance*Cos(zh_l)+7.0,ylight,distance*Sin(zh_l),1.0};
+       float Position_fire[] = {-7.0,-2.0,1.5,1.0};
+        //float Position_fire[] = {2*Cos(zh_l)-7.0,ylight,2*Sin(zh_l),1.0};
         //  Draw light position as ball (still no lighting here)
         glColor3f(1,1,1);
         ball(Position[0],Position[1],Position[2] , 0.1);
@@ -3452,7 +3484,13 @@ void display()
         glLightfv(GL_LIGHT0,GL_AMBIENT ,Ambient);
         glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
         glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
-        glLightfv(GL_LIGHT0,GL_POSITION,Position);
+        glLightfv(GL_LIGHT0,GL_POSITION,Position_fire);
+
+        glEnable(GL_LIGHT1);
+        glLightfv(GL_LIGHT1,GL_AMBIENT ,Ambient);
+        glLightfv(GL_LIGHT1,GL_DIFFUSE ,Diffuse);
+        glLightfv(GL_LIGHT1,GL_SPECULAR,Specular);
+        glLightfv(GL_LIGHT1,GL_POSITION,Position);
    }
    else
      glDisable(GL_LIGHTING);
@@ -3475,7 +3513,9 @@ void display()
 
 
 //partical engine
-/*if(firework){
+if(firework&&mode_project == 2){
+  glPushMatrix();
+ glTranslatef(Ex+10*Sin(zh)+13.8,Ey-1.0+50*Sin(theta+10)-7.0,Ez-10*Cos(zh)-0.0);
 clock_t iNowTime = clock();
 float timePassed = (float)(iNowTime- g_iLastRenderTime)/CLOCKS_PER_SEC;
 g_ParticleSystem1.UpdateSystem(timePassed);
@@ -3487,8 +3527,11 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
     CamDistToEmitter = 0.2f;
   glPointSize(1.0f/CamDistToEmitter);
   g_ParticleSystem1.Render();
-}*/
+  glPopMatrix();
+}
 
+glPushMatrix();
+ glTranslatef(-7.0,0.0,0.3);
 clock_t iNowTime1 = clock();
 float timePassed1 = (float)(iNowTime1 - g_iLastRenderTime1)/CLOCKS_PER_SEC;
 g_ParticleSystem2.UpdateSystem(timePassed1);
@@ -3506,6 +3549,7 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
   g_ParticleSystem2.Render();
   g_ParticleSystem4.Render();
   glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
 
 
 
@@ -3513,7 +3557,6 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
 
  glScalef(2*scale,2*scale,2*scale);
  glTranslatef(-25,0,0);
- 
 
  /*glPushMatrix();
  glScalef(0.45,0.45,0.45);
@@ -3521,7 +3564,7 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
    drawBridge();
    glPopMatrix();*/
 
- /*glPushMatrix();
+ glPushMatrix();
  glScalef(0.8,0.8,0.8);
  glTranslatef(40.0,0.0,-5.0);
  drawCourt();
@@ -3561,11 +3604,11 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
  drawBoard(); 
 
  glPopMatrix();
- drawWall(3.5);
+ drawWall(2.5);
 
  glPushMatrix();
- glTranslatef(12.0,0.0,0.0);
- drawWall(3.5);
+ glTranslatef(13.0,0.0,0.0);
+ drawWall(2.5);
  glPopMatrix();
  
 glPushMatrix();
@@ -3698,7 +3741,7 @@ glPushMatrix();
    glPushMatrix();
    glTranslatef(-15.0,0.0,-15.0);
    drawGround();
-   glPopMatrix();*/
+   glPopMatrix();
 
    
 
@@ -3857,9 +3900,10 @@ void key(unsigned char ch,int x,int y)
       exit(0);
    //  Reset view angle
    else if (ch == 'r' && mode_project!=2){
-      th = -200;
-      ph = 30;
-      zh = 0;}
+      th = 160;
+      ph = 35;
+      zh = 0;
+      fov = 90;}
    else if (ch == 'r' && mode_project ==2){
       Ex = -2*dim*Sin(th)*Cos(ph);
       Ey = 0;
@@ -3873,13 +3917,19 @@ void key(unsigned char ch,int x,int y)
    else if (ch == 'l' || ch == 'L')
       light = 1-light;
    //  Switch projection mode
-    else if ('0'<=ch && ch<='2')
+    else if ('1'<=ch && ch<='2')
       mode_project = ch-'0';
    //  Toggle light movement
    else if (ch == 'm' || ch == 'M')
       move = 1-move;
-    else if (ch == 'f' || ch == 'F')
+    else if (ch == 'f' || ch == 'F'){
       firework = 1-firework;
+      Ex = 10;
+      Ez = -5;
+      theta = 5;
+      zh = -90;
+    }
+
    //  Move light
    else if (ch == '<')
       zh_l += 1;
@@ -3930,7 +3980,26 @@ void key(unsigned char ch,int x,int y)
       scale+=0.01;
    else if (ch == 'B' && mode_project==2){
       if(scale-0.01>0)scale-=0.01; 
+    }
+   else if (ch == 'k' || ch == 'K'){
+      box = 1-box; 
    }
+   else if ((ch == 'q' || ch == 'Q' )&& mode_project==2){
+
+      Ex = -8;
+      Ez = -11;
+      zh = 180;
+      theta = 0;
+      firework = 0;
+
+    }
+   else if ((ch == 'w' || ch == 'W') && mode_project==2){
+      Ex = 1.9;
+      Ez = 13.7;
+      zh = 190;
+      Ey = -0.1;
+      firwork = 0;
+  }
       //  Translate shininess power to value (-1 => 0)
    shiny = shininess<0 ? 0 : pow(2.0,shininess);
    //  Tell GLUT it is necessary to redisplay the scene
@@ -3969,7 +4038,7 @@ int main(int argc,char* argv[])
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    glutInitWindowSize(400,400);
-   glutCreateWindow("Assignment 6: Xu Han");
+   glutCreateWindow("Assignment 7: Xu Han");
    //compute the vertices and indices
   CreatePool();
   glEnableClientState(GL_VERTEX_ARRAY);
@@ -4015,6 +4084,7 @@ int main(int argc,char* argv[])
    sky[0] = LoadTexBMP("sky0.bmp");
    sky[1] = LoadTexBMP("sky1.bmp");
    fire = LoadTexBMP("fire.bmp");
+   texture[10] = LoadTexBMP("tree.bmp");
 
    g_iLastRenderTime=clock();
    g_iLastRenderTime1=clock();
