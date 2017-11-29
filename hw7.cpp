@@ -109,7 +109,7 @@ float ylight  =   0;  // Elevation of light
 int numberOfTrees = 30;
 int obj;
 
-unsigned int texture[11];  //texture names
+unsigned int texture[13];  //texture names
 
 struct SOscillator
 {
@@ -2624,6 +2624,74 @@ void drawTower(){
 glColor3f(1.0,1.0,1.0);
 }
 
+static void cube1(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th)
+{
+   float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV , GL_TEXTURE_ENV_MODE , mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(1,1,1);
+   glBindTexture(GL_TEXTURE_2D,texture[11]);
+   //  Save transformation
+   glPushMatrix();
+   //  Offset
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx,dy,dz);
+   //  Cube
+   glBegin(GL_QUADS);
+   //  Right
+   //glColor3f(0,0.749,1);
+   glNormal3f(0,0,1);
+   glTexCoord2f(0,0);glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0);glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1);glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1);glVertex3f(-1,+1, 1);
+   //  Left
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);glVertex3f(+1,-1,-1);
+    glTexCoord2f(1,0);glVertex3f(-1,-1,-1);
+    glTexCoord2f(1,1);glVertex3f(-1,+1,-1);
+    glTexCoord2f(0,1);glVertex3f(+1,+1,-1);
+   //  Front
+
+  // glColor3f(0,0.49,1);
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);glVertex3f(+1,-1,+1);
+    glTexCoord2f(1,0);glVertex3f(+1,-1,-1);
+    glTexCoord2f(1,1);glVertex3f(+1,+1,-1);
+    glTexCoord2f(0,1);glVertex3f(+1,+1,+1);
+   //  back
+   //glColor3f(0.69,0.769,0.871);
+   glNormal3f(-1, 0, 0);
+  glTexCoord2f(0,0);glVertex3f(-1,-1,-1);
+    glTexCoord2f(1,0);glVertex3f(-1,-1,+1);
+    glTexCoord2f(1,1);glVertex3f(-1,+1,+1);
+    glTexCoord2f(0,1);glVertex3f(-1,+1,-1);
+   //  Top
+   //glColor3f(0.541,0.169,0.886);
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0);glVertex3f(-1,+1,+1);
+    glTexCoord2f(1,0);glVertex3f(+1,+1,+1);
+    glTexCoord2f(1,1);glVertex3f(+1,+1,-1);
+    glTexCoord2f(0,1);glVertex3f(-1,+1,-1);
+   //  Bottom
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0);glVertex3f(-1,-1,-1);
+    glTexCoord2f(1,0);glVertex3f(+1,-1,-1);
+    glTexCoord2f(1,1);glVertex3f(+1,-1,+1);
+    glTexCoord2f(0,1);glVertex3f(-1,-1,+1);
+   //  End
+   glEnd();
+   //  Undo transformations
+   glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
+ }
 /*
  * draw the board
  */
@@ -2675,6 +2743,32 @@ void drawBoard(){
 
 }
 
+
+/*
+ *  Draw the chair
+ */
+void drawchair(){
+      glPushMatrix();
+      glScalef(1,1,0.5);
+      cube1(0.6,0.15,0.55,0.1,0.08,0.25,0);
+      cube1(0.6,0.2,0.55,0.15,0.03,0.35,0);
+      
+      cube1(0.6-0.15,0.4,0.55,0.03,0.21,0.35,0);
+      glPopMatrix();
+}
+
+/*
+ *  Draw the chair
+ */
+void drawcdesk(){
+      glPushMatrix();
+      glScalef(1,1,0.5);
+      cube1(0.6,0.15,0.55,0.1,0.08,0.25,0);
+      cube1(0.6,0.2,0.55,0.15,0.03,0.35,0);
+      
+      //cube1(0.6-0.15,0.4,0.55,0.03,0.21,0.35,0);
+      glPopMatrix();
+}
 /*
  *  Draw the gate
  */
@@ -2684,6 +2778,46 @@ void drawGate(){
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+
+
+ glPushMatrix();
+   glTranslatef(8.0,0.55,0.1);
+   //glRotatef(-45,0,1,0);
+   glScalef(2.0,2.0,2.0);
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glBindTexture(GL_TEXTURE_2D,texture[12]);
+   glutSolidTeapot(0.05);
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix();
+
+
+
+   glPushMatrix();
+   glTranslatef(6.0,0.0,-1.0);
+   glRotatef(-45,0,1,0);
+   glScalef(2.0,2.0,2.0);
+
+   drawchair();
+   glPopMatrix();
+
+  glPushMatrix();
+   glTranslatef(7.5,0.0,-1.0);
+   glRotatef(-45,0,1,0);
+   glScalef(2.0,2.0,2.0);
+
+   drawcdesk();
+   glPopMatrix();
+
+   glPushMatrix();
+   glTranslatef(11.0,0.0,0.0);
+   glRotatef(225,0,1,0);
+   glScalef(2.0,2.0,2.0);
+
+
+
+   drawchair();
+   glPopMatrix();
 
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
@@ -3637,7 +3771,7 @@ void display()
         //  Draw light position as ball (still no lighting here)
         glColor3f(1,1,1);
         ball(Position[0],Position[1],Position[2] , 0.1);
-        float Position_fire[] = {-6.9,-0.3,1.0,1.0};
+        float Position_fire[] = {-6.9,-0.5,1.0,1.0};
    ball(Position_fire[0],Position_fire[1],Position_fire[2] , 0.01);   
 
           //  OpenGL should normalize normal vectors
@@ -3684,7 +3818,7 @@ void display()
 
 }
 
-
+drawchair();
 
 //partical engine
 if(firework&&mode_project == 2){
@@ -4265,6 +4399,8 @@ int main(int argc,char* argv[])
    sky[1] = LoadTexBMP("sky1.bmp");
    fire = LoadTexBMP("fire.bmp");
    texture[10] = LoadTexBMP("tree.bmp");
+   texture[11] = LoadTexBMP("chair.bmp");
+   texture[12] = LoadTexBMP("teapot.bmp");
 
    g_iLastRenderTime=clock();
    g_iLastRenderTime1=clock();
