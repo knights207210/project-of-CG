@@ -68,6 +68,7 @@ int    sky[2];   //  Sky textures
 int box=0;
 int firework=0;
 int fire;
+int move_light = 1;
 
 //initialized point view
 
@@ -98,7 +99,7 @@ int inc       =  10;  // Ball increment
 int smooth    =   1;  // Smooth/Flat shading
 int local     =   0;  // Local Viewer Model
 int emission  =   0;  // Emission intensity (%)
-int ambient   =  30;  // Ambient intensity (%)
+int ambient   =  0;  // Ambient intensity (%)
 int diffuse   = 100;  // Diffuse intensity (%)
 int specular  =   0;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
@@ -1202,9 +1203,14 @@ static void Vertex(double th,double ph)
  */
 static void ball(double x,double y,double z,double r)
 {
+  float white[] = {1,1,1,1};
+   float Emission[]  = {0.01*emission,0.0,0.0,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
    int th,ph;
-   float yellow[] = {1.0,1.0,0.0,1.0};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   //float yellow[] = {1.0,1.0,0.0,1.0};
+   //float Emission[]  = {0.0,0.0,0.01*emission,1.0};
    //  Save transformation
    glPushMatrix();
    //  Offset, scale and rotate
@@ -1212,9 +1218,9 @@ static void ball(double x,double y,double z,double r)
    glScaled(r,r,r);
    //  White ball
    glColor3f(1,1,1);
-   glMaterialf(GL_FRONT,GL_SHININESS,shiny);
-   glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
-   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+   //glMaterialf(GL_FRONT,GL_SHININESS,shiny);
+   //glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
+   //glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
    //  Bands of latitude
    for (ph=-90;ph<90;ph+=inc)
    {
@@ -1331,7 +1337,7 @@ static void Sky1(double D)
 void drawCourtTower(float R, float G, float B){
     
   float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   float Emission[]  = {0.0,0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -1568,7 +1574,7 @@ rSeg, cSeg = number of segments/detail
 void drawTorus(double r, double c,int rSeg, int cSeg)
 {
    float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   float Emission[]  = {0.0,0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -1614,7 +1620,7 @@ void drawTorus(double r, double c,int rSeg, int cSeg)
 
 void drawCourtGate(){
     float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   float Emission[]  = {0.0,0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -1656,7 +1662,7 @@ void drawCourt(){
 
 
   float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   float Emission[]  = {0.0,0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -2674,7 +2680,7 @@ void drawBoard(){
  */
 void drawGate(){
    float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   float Emission[]  = {0.0,0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -2691,6 +2697,15 @@ void drawGate(){
    glTexCoord2f(0,1*1.5); glVertex3f(3.5,HigherHeight*1.2,-2.0);
    glTexCoord2f(1*1.5,1*1.5); glVertex3f(3.5,HigherHeight*1.2,2.0);
    glTexCoord2f(1*1.5,0); glVertex3f(3.5,0.0,2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(1.0,0.0,0.0);
+   glTexCoord2f(0,0); glVertex3f(3.501,0.0,-2.0);
+   glTexCoord2f(0,1*1.5); glVertex3f(3.501,HigherHeight*1.2,-2.0);
+   glTexCoord2f(1*1.5,1*1.5); glVertex3f(3.501,HigherHeight*1.2,2.0);
+   glTexCoord2f(1*1.5,0); glVertex3f(3.501,0.0,2.0);
+
    
    
    glEnd();
@@ -2702,6 +2717,15 @@ void drawGate(){
    glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,-2.0);
    glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,-2.0);
    glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(3.5/4,0);glVertex3f(3.5,0.0,-1.999);
+   glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,-1.999);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,-1.999);
+   glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,-1.999);
+   glEnd();
+
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
 
@@ -2723,11 +2747,30 @@ void drawGate(){
    glEnd();
 
    glBegin(GL_QUADS);
+   glNormal3f(1.0,0.0,0.0);
+   
+   glTexCoord2f(0,0);glVertex3f(4.501,0.0,-4.0);
+   glTexCoord2f(0,1*1.5);glVertex3f(4.501,HigherHeight*1.2,-4.0);
+   glTexCoord2f(1/1.7,1*1.5);glVertex3f(4.501,HigherHeight*1.2,-2.0);
+   glTexCoord2f(1/1.7,0);glVertex3f(4.501,0.0,-2.0);
+   
+   
+   glEnd();
+
+   glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,-4.0);
    glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,-4.0);
    glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,-4.0);
    glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,-4.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,-3.999);
+   glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,-3.999);
+   glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,-3.999);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,-3.999);
    glEnd();
 
    glBegin(GL_QUADS);
@@ -2739,6 +2782,17 @@ void drawGate(){
    
    
    glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(-1.0,0.0,0.0);
+   glTexCoord2f(0,0); glVertex3f(6.499,0.0,-4.0);
+   glTexCoord2f(0,1*1.5);glVertex3f(6.499,HigherHeight*1.2,-4.0);
+   glTexCoord2f(1/1.7,1*1.5);glVertex3f(6.499,HigherHeight*1.2,-2.0);
+   glTexCoord2f(1/1.7,0);glVertex3f(6.499,0.0,-2.0);
+   
+   
+   glEnd();
+
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
 
@@ -2757,6 +2811,14 @@ void drawGate(){
    glEnd();
 
    glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,-1.999);
+   glTexCoord2f(7.5/4,0);glVertex3f(7.5,0.0,-1.999);
+   glTexCoord2f(7.5/4,HigherHeight*1.2/4);glVertex3f(7.5,HigherHeight*1.2,-1.999);
+   glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,-1.999);
+   glEnd();
+
+   glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(7.5/4,HigherHeight/8);glVertex3f(7.5,HigherHeight/2,-2.0);
    glTexCoord2f(9.5/4,HigherHeight/8);glVertex3f(9.5,HigherHeight/2,-2.0);
@@ -2765,11 +2827,28 @@ void drawGate(){
    glEnd();
 
    glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(7.5/4,HigherHeight/8);glVertex3f(7.5,HigherHeight/2,-1.999);
+   glTexCoord2f(9.5/4,HigherHeight/8);glVertex3f(9.5,HigherHeight/2,-1.999);
+   glTexCoord2f(9.5/4,HigherHeight*1.2/4);glVertex3f(9.5,HigherHeight*1.2,-1.999);
+   glTexCoord2f(7.5/4,HigherHeight*1.2/4);glVertex3f(7.5,HigherHeight*1.2,-1.999);
+   glEnd();
+
+   glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,-2.0);
    glTexCoord2f(9.5/4,0);glVertex3f(9.5,0.0,-2.0);
    glTexCoord2f(9.5/4,HigherHeight*1.2/4);glVertex3f(9.5,HigherHeight*1.2,-2.0);
    glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,-2.0);
+   glEnd();
+  
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,-1.999);
+   glTexCoord2f(9.5/4,0);glVertex3f(9.5,0.0,-1.999);
+   glTexCoord2f(9.5/4,HigherHeight*1.2/4);glVertex3f(9.5,HigherHeight*1.2,-1.999);
+   glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,-1.999);
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
@@ -2789,11 +2868,27 @@ void drawGate(){
    glEnd();
 
    glBegin(GL_QUADS);
+   glNormal3f(1.0,0.0,0.0);
+   glTexCoord2f(0,0);glVertex3f(10.501,0.0,-4.0);
+   glTexCoord2f(0,1*1.5);glVertex3f(10.501,HigherHeight*1.2,-4.0);
+   glTexCoord2f(1/1.7,1*1.5);glVertex3f(10.501,HigherHeight*1.2,-2.0);
+   glTexCoord2f(1/1.7,0);glVertex3f(10.501,0.0,-2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,-4.0);
    glTexCoord2f(12.5/4,0);glVertex3f(12.5,0.0,-4.0);
    glTexCoord2f(12.5/4,HigherHeight*1.2/4);glVertex3f(12.5,HigherHeight*1.2,-4.0);
    glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,-4.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,-3.999);
+   glTexCoord2f(12.5/4,0);glVertex3f(12.5,0.0,-3.999);
+   glTexCoord2f(12.5/4,HigherHeight*1.2/4);glVertex3f(12.5,HigherHeight*1.2,-3.999);
+   glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,-3.999);
    glEnd();
 
    glBegin(GL_QUADS);
@@ -2804,6 +2899,16 @@ void drawGate(){
    glTexCoord2f(1/1.7,0);glVertex3f(12.5,0.0,-2.0);
    
    glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(-1.0,0.0,0.0);
+   glTexCoord2f(0,0);glVertex3f(12.499,0.0,-4.0);
+   glTexCoord2f(0,1*1.5);glVertex3f(12.499,HigherHeight*1.2,-4.0);
+   glTexCoord2f(1/1.7,1*1.5);glVertex3f(12.499,HigherHeight*1.2,-2.0);
+   glTexCoord2f(1/1.7,0);glVertex3f(12.499,0.0,-2.0);
+   
+   glEnd();
+
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
 
@@ -2814,11 +2919,19 @@ void drawGate(){
    glBindTexture(GL_TEXTURE_2D,texture[3]);
 
    glBegin(GL_QUADS);
-   glNormal3f(0.0,-1.0,0.0);
+   glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(12.5/4,0);glVertex3f(12.5,0.0,-2.0);
    glTexCoord2f(13.5/4,0);glVertex3f(13.5,0.0,-2.0);
    glTexCoord2f(13.5/4,HigherHeight*1.2/4);glVertex3f(13.5,HigherHeight*1.2,-2.0);
    glTexCoord2f(12.5/4,HigherHeight*1.2/4);glVertex3f(12.5,HigherHeight*1.2,-2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(12.5/4,0);glVertex3f(12.5,0.0,-1.999);
+   glTexCoord2f(13.5/4,0);glVertex3f(13.5,0.0,-1.999);
+   glTexCoord2f(13.5/4,HigherHeight*1.2/4);glVertex3f(13.5,HigherHeight*1.2,-1.999);
+   glTexCoord2f(12.5/4,HigherHeight*1.2/4);glVertex3f(12.5,HigherHeight*1.2,-1.999);
    glEnd();
 
    glBegin(GL_QUADS);
@@ -2832,11 +2945,29 @@ void drawGate(){
    glEnd();
 
    glBegin(GL_QUADS);
+   glNormal3f(-1.0,0.0,0.0);
+   glTexCoord2f(1*1.5,0);glVertex3f(13.499,0.0,-2.0);
+   glTexCoord2f(1*1.5,1*1.5);glVertex3f(13.499,HigherHeight*1.2,-2.0);
+   glTexCoord2f(0,1*1.5);glVertex3f(13.499,HigherHeight*1.2,2.0);
+   glTexCoord2f(0,0); glVertex3f(13.499,0.0,2.0);
+   
+   
+   glEnd();
+
+   glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,1.0);
    glTexCoord2f(13.5/4,0);glVertex3f(13.5,0.0,2.0);
    glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,2.0);
    glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,2.0);
    glTexCoord2f(13.5/4,HigherHeight*1.2/4);glVertex3f(13.5,HigherHeight*1.2,2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,-1.0);
+   glTexCoord2f(13.5/4,0);glVertex3f(13.5,0.0,1.999);
+   glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,1.999);
+   glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,1.999);
+   glTexCoord2f(13.5/4,HigherHeight*1.2/4);glVertex3f(13.5,HigherHeight*1.2,1.999);
    glEnd();
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
@@ -2858,11 +2989,29 @@ void drawGate(){
    glEnd();
 
    glBegin(GL_QUADS);
+   glNormal3f(-1.0,0.0,0.0);
+   glTexCoord2f(0.0,0);glVertex3f(10.499,0.0,2.0);
+   glTexCoord2f(0.0,1.5);glVertex3f(10.499,HigherHeight*1.2,2.0);
+   glTexCoord2f(1/1.7,1.5);glVertex3f(10.499,HigherHeight*1.2,4.0);
+   glTexCoord2f(1/1.7,0);glVertex3f(10.499,0.0,4.0);
+   
+   
+   glEnd();
+
+   glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,1.0);
    glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,4.0);
    glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,4.0);
    glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,4.0);
    glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,4.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,-1.0);
+   glTexCoord2f(10.5/4,0);glVertex3f(10.5,0.0,3.999);
+   glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,3.999);
+   glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,3.999);
+   glTexCoord2f(10.5/4,HigherHeight*1.2/4);glVertex3f(10.5,HigherHeight*1.2,3.999);
    glEnd();
 
    glBegin(GL_QUADS);
@@ -2875,6 +3024,18 @@ void drawGate(){
    
    
    glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(1.0,0.0,0.0);
+   glTexCoord2f(0.0,0.0);glVertex3f(6.501,0.0,4.0);
+   glTexCoord2f(0,1.5);glVertex3f(6.501,HigherHeight*1.2,4.0);
+   glTexCoord2f(1/1.7,1.5);glVertex3f(6.501,HigherHeight*1.2,2.0);
+   glTexCoord2f(1/1.7,0);glVertex3f(6.501,0.0,2.0);
+   
+   
+   
+   glEnd();
+
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
 
@@ -2890,6 +3051,14 @@ void drawGate(){
    glTexCoord2f(3.5/4,0);glVertex3f(3.5,0.0,2.0);
    glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,2.0);
    glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,-1.0);
+   glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,1.999);
+   glTexCoord2f(3.5/4,0);glVertex3f(3.5,0.0,1.999);
+   glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,1.999);
+   glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,1.999);
    glEnd();
 
    glPopMatrix();
@@ -2908,6 +3077,7 @@ void drawGate(){
    glTexCoord2f(13.5/4,2.0/4); glVertex3f(13.5,0.0,2.0);
    glTexCoord2f(3.5/4,2.0/4); glVertex3f(3.5,0.0,2.0);
    glEnd();
+
 
    glBegin(GL_POLYGON);
 
@@ -3449,10 +3619,8 @@ void display()
 
    if(box) {
     Sky(3.5*dim);
-    ambient=30;
   }
    else{
-    ambient = 0;
     Sky1(3.5*dim);
   }
    //  Light switch
@@ -3463,13 +3631,16 @@ void display()
         float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
         float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
         //  Light position
-        float Position[]  = {distance*Cos(zh_l)+7.0,ylight,distance*Sin(zh_l),1.0};
-       float Position_fire[] = {-7.0,-2.0,1.5,1.0};
+        float Position[]  = {distance*Cos(zh_l)-7.0,ylight,distance*Sin(zh_l),1.0};
+       
         //float Position_fire[] = {2*Cos(zh_l)-7.0,ylight,2*Sin(zh_l),1.0};
         //  Draw light position as ball (still no lighting here)
         glColor3f(1,1,1);
         ball(Position[0],Position[1],Position[2] , 0.1);
-        ball(Position_fire[0],Position_fire[1],Position_fire[2] , 0.01);        //  OpenGL should normalize normal vectors
+        float Position_fire[] = {-6.9,-0.3,1.0,1.0};
+   ball(Position_fire[0],Position_fire[1],Position_fire[2] , 0.01);   
+
+          //  OpenGL should normalize normal vectors
         glEnable(GL_NORMALIZE);
         //  Enable lighting
         glEnable(GL_LIGHTING);
@@ -3486,15 +3657,18 @@ void display()
         glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
         glLightfv(GL_LIGHT0,GL_POSITION,Position_fire);
 
-        glEnable(GL_LIGHT1);
+       if(move_light){
+       glEnable(GL_LIGHT1);
         glLightfv(GL_LIGHT1,GL_AMBIENT ,Ambient);
         glLightfv(GL_LIGHT1,GL_DIFFUSE ,Diffuse);
         glLightfv(GL_LIGHT1,GL_SPECULAR,Specular);
         glLightfv(GL_LIGHT1,GL_POSITION,Position);
+      }
    }
    else
      glDisable(GL_LIGHTING);
    //  Set view angle
+      
    glPushMatrix();
    glTranslatef(0.0,-0.5,0.0);
 
@@ -3531,7 +3705,7 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
 }
 
 glPushMatrix();
- glTranslatef(-7.0,0.0,0.3);
+ glTranslatef(-7.0,0.0,0.5);
 clock_t iNowTime1 = clock();
 float timePassed1 = (float)(iNowTime1 - g_iLastRenderTime1)/CLOCKS_PER_SEC;
 g_ParticleSystem2.UpdateSystem(timePassed1);
@@ -3983,6 +4157,10 @@ void key(unsigned char ch,int x,int y)
     }
    else if (ch == 'k' || ch == 'K'){
       box = 1-box; 
+      if(box == 0){
+        ambient = 0;
+      }else
+        ambient = 30;
    }
    else if ((ch == 'q' || ch == 'Q' )&& mode_project==2){
 
@@ -3998,8 +4176,10 @@ void key(unsigned char ch,int x,int y)
       Ez = 13.7;
       zh = 190;
       Ey = -0.1;
-      firwork = 0;
+      firework = 0;
   }
+  else if(ch == 'c' || ch == 'C')
+    move_light = 1- move_light;
       //  Translate shininess power to value (-1 => 0)
    shiny = shininess<0 ? 0 : pow(2.0,shininess);
    //  Tell GLUT it is necessary to redisplay the scene

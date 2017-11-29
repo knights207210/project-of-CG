@@ -9,7 +9,7 @@ This openGL program is for CSCI5229’s course project. It has two modes: the pr
 
 1. users could observe the water simulation in Forbidden Forest;
 2. users could start fireworks using the wand;
-3. users could go inside the room where basic scene and fire simulation is finished;
+3. users could go inside the room where basic scene and fire simulation is finished( when observe the fire simulation, users could press ‘c’ or ‘C’ to switch off the other light source);
 4. users could change between a night and day mode;
 5. users could go up to view the whole scene.
 
@@ -47,14 +47,19 @@ Running the Program
  *  +/-        Change field of view of perspective
  *  u/U        Make the first person navigation up and down 
  *  b/B        Change the scale of the scene in first person navigation(b: larger; B: 		smaller)
+ *  c/C        Switch on/off the light source which goes around
+               (for fire observation);
  *  f/F        When in the first person mode, use the wand to start the firework
- *  w/W        When in the first person mode, go to the place where the water simulation is
- *  q/Q        When in the first person mode, go to the place where has the fire simulation and indoor scene
+ *  w/W        When in the first person mode, go to the place where the water
+               simulation is
+ *  q/Q        When in the first person mode, go to the place where has the fire
+               simulation and indoor scene
  *  k/K        Change between the day/night mode
  *  x          Toggle axes
- *  arrows     Change view angle(<-/->: rotate around Y axis; up/down: rotate around X axis) when in mode 1
-               Change the position and view angle(<-/->, make the first person navigation look left and right; up and down, 
-               make the first person navigation move forward and backward)
+ *  arrows     Change view angle(<-/->: rotate around Y axis; up/down: rotate around
+               X axis) when in mode 1 Change the position and view angle(<-/->, make 
+               the first person navigation look left and right; up and down, make the
+               first person navigation move forward and backward)
  *  r          Reset view angle
  *  ESC        Exit 
 
