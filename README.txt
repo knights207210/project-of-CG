@@ -7,17 +7,16 @@ Brife description
 
 This openGL program is for CSCI5229’s course project. It has two modes: the projection mode and first person navigation mode. Currently, users could make the following amazing things happen:
 
-1. users could observe the water simulation in Forbidden Forest;
-2. users could start fireworks using the wand;
-3. users could go inside the room where basic scene and fire simulation is finished( when observe the fire simulation, users could press ‘c’ or ‘C’ to switch off the other light source);
+1. users could observe the water simulation in Forbidden Forest(press ‘w’/‘W’ in first person mode);
+2. users could start fireworks using the wand(press ‘f’/‘F’ in first person mode);
+3. users could go inside the room where basic scene and fire simulation is finished( press ‘q’/‘Q’ in first person mode or change the view anger in projection mode; when observe the fire simulation, users could press ‘c’ or ‘C’ to switch off the other light source);
 4. users could change between a night and day mode;
-5. users could go up to view the whole scene.
 
 What will users be able to do by the final:
 1. all of the things listed above;
-2. potronums will be called;
-3. 3D selection will happen;
-4. users could hit a ball in the court.
+2. 3D selection will happen;
+3. users could hit a ball in the court.
+4. light will be moved together with first person view
 ---------------------------------------------------------------------------
 The code is programed under OS X.
 ---------------------------------------------------------------------------

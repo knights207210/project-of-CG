@@ -46,8 +46,8 @@
 #define SQR(a) (a*a)
 
 #define BILLBOARDING_NONE             0
-#define BILLBOARDING_PERPTOVIEWDIR          1  //align particles perpendicular to view direction
-#define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  //like PERPToViewDir, but Particles are vertically aligned
+#define BILLBOARDING_PERPTOVIEWDIR          1 
+#define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
 int zh=0;       // rotate around z
@@ -110,7 +110,8 @@ int numberOfTrees = 30;
 int obj;
 
 unsigned int texture[13];  //texture names
-
+//waterwave simulation
+//-------------------------------------------------------------------------------------------------------------------
 struct SOscillator
 {
   GLfloat x,y,z;
@@ -206,13 +207,9 @@ SF3dVector operator/ (SF3dVector v, float r)
 {
   return v*(1/r);
 }
-/*float operator* (SF3dVector v, SF3dVector u)  //Scalar product
-{
-  return v.x*u.x+v.y*u.y+v.z*u.z;
-}*/
 
-
-
+//partical engine
+//-----------------------------------------------------------------------------------------------------------------------------------------------
 #define NULL_VECTOR F3dVector(0.0f,0.0f,0.0f)
 class CCCParticleSystem;
 class CCCParticle
@@ -888,7 +885,7 @@ clock_t g_iLastRenderTime1;
 void InitParticles()
 {
 
-//INIT SYSTEM 2 (POINTS, FIREWORK)
+//INIT SYSTEM 1 (POINTS, FIREWORK)
   g_ParticleSystem1.Initialize(800);  //particle system must not have more than 800 particles
   g_ParticleSystem1.m_iParticlesCreatedPerSec = 800;  //we create all particles in the first second of the system's life
   g_ParticleSystem1.m_fMinDieAge = 2.5f;      //but the particles live longer than one second
@@ -913,28 +910,7 @@ void InitParticles()
   g_ParticleSystem1.m_bParticlesLeaveSystem = true;
 
 
-/*g_ParticleSystem2.Initialize(800);  //particle system must not have more than 800 particles
-  g_ParticleSystem2.m_iParticlesCreatedPerSec = 800;  //we create all particles in the first second of the system's life
-  g_ParticleSystem2.m_fMinDieAge = 2.5f;      //but the particles live longer than one second
-  g_ParticleSystem2.m_fMaxDieAge = 2.5f;      //-> this causes the system to "shoot" periodically
-    
-  g_ParticleSystem2.m_fCreationVariance = 1.0f;
-  g_ParticleSystem2.m_bRecreateWhenDied = true;
-  g_ParticleSystem2.SetCreationColor(1.0f,1.0f,1.0f,
-                0.5f,0.5f,0.5f);
-  g_ParticleSystem2.SetDieColor(0.0f,1.0f,0.0f,
-                 0.0f,0.3f,0.0f);
-  g_ParticleSystem2.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
-  g_ParticleSystem2.SetEmitter(Ex+10*Sin(zh),Ey-1.0+50*Sin(theta+10),Ez-10*Cos(zh),
-                0.02f,0.0f,0.02f);
-  g_ParticleSystem2.SetAcceleration(F3dVector(0.0f,-1.0f,0.0f),0.83f,1.4f);
-  g_ParticleSystem2.SetSizeValues(3.0f,3.0f,4.0f,4.0f);
-  g_ParticleSystem2.m_fMaxEmitSpeed = 0.82f;
-  g_ParticleSystem2.m_fMinEmitSpeed = 1.3f;
-  g_ParticleSystem2.SetEmissionDirection(-1.0f,2.0f,0.0f,
-                    0.5f,0.5f,0.5f);
-
-  g_ParticleSystem2.m_bParticlesLeaveSystem = true;*/
+//INIT SYSTEM 2 (FIRE)
 
   g_ParticleSystem2.Initialize(300);
   g_ParticleSystem2.m_iParticlesCreatedPerSec = 300;
@@ -960,37 +936,11 @@ void InitParticles()
   g_ParticleSystem2.SetSpinSpeed(-0.82*PI,0.82*PI);
   g_ParticleSystem2.m_iBillboarding = BILLBOARDING_PERPTOVIEWDIR;
   g_ParticleSystem2.LoadTextureFromFile();
-
-
-  /*g_ParticleSystem4.Initialize(150);
-  g_ParticleSystem4.m_iParticlesCreatedPerSec = 50;
-  g_ParticleSystem4.m_fCreationVariance = 0.0f;
-  g_ParticleSystem4.m_bRecreateWhenDied = true;
-  g_ParticleSystem4.m_fMinDieAge = 2.5f;
-  g_ParticleSystem4.m_fMaxDieAge = 3.5f;
-  g_ParticleSystem4.SetCreationColor(0.1f,0.1f,0.1f,
-                  0.2f,0.2f,0.2f);
-  g_ParticleSystem4.SetDieColor(0.0f,0.0f,0.0f,
-                 0.0f,0.0f,0.0f);
-
-  g_ParticleSystem4.SetAlphaValues(1.0f,1.0f,0.0f,0.0f);
-  g_ParticleSystem4.SetEmitter(-0.8f,0.0f,0.0f,
-                0.0f,0.0f,0.0f);
-  g_ParticleSystem4.SetAcceleration(F3dVector(0.0f,1.0f,0.0f),0.3f,0.4f);
-  g_ParticleSystem4.SetSizeValues(0.0f,0.0f,1.12f,1.22f);
-  g_ParticleSystem4.m_fMaxEmitSpeed = 0.01f;
-  g_ParticleSystem4.m_fMinEmitSpeed = 0.04f;
-  g_ParticleSystem4.SetEmissionDirection(0.0f,1.0f,0.0f,
-                       0.08f,0.5f,0.08f);
-  g_ParticleSystem4.m_bParticlesLeaveSystem = true;
-  g_ParticleSystem4.m_iBillboarding = BILLBOARDING_PERPTOVIEWDIR;
-  g_ParticleSystem4.LoadTextureFromFile();*/
-
 }
 
 
 
-///////////////////////////////////////////////////
+//water simulation--draw the pool 
 
 
 void CreatePool()
@@ -1044,18 +994,9 @@ void CreatePool()
   IndexVect.clear();  //no longer needed, takes only memory
 }
 
-
+//water simulation--physicial simulation
 void UpdateScene(bool bEndIsFree, float deltaTime, float time)
 {
-//********
-// Here we do the physical calculations: 
-// The oscillators are moved according to their neighbors.
-// The parameter bEndIsFree indicates, whether the oscillators in the edges can move or not.
-// The new position may be assigned not before all calculations are done!
-
-// PLEASE NOTE: THESE ARE APPROXIMATIONS AND I KNOW THIS! (but is looks good, doesn't it?)
-
-  //if we use two loops, it is a bit easier to understand what I do here.
   for (int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
   {
     for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
@@ -1109,9 +1050,7 @@ void UpdateScene(bool bEndIsFree, float deltaTime, float time)
     {
       ///
       //Calculating the normal:
-      //Take the direction vectors 1.) from the left to the right neighbor 
-      // and 2.) from the upper to the lower neighbor.
-      //The vector orthogonal to these 
+    
 
       SF3dVector u,v,p1,p2; //u and v are direction vectors. p1 / p2: temporary used (storing the points)
 
@@ -1158,7 +1097,7 @@ void UpdateScene(bool bEndIsFree, float deltaTime, float time)
   }
 
 }
-
+//draw the scene with pool
 void DrawScene(void)
 {
   float white[] = {1,1,1,1};
@@ -1176,9 +1115,6 @@ void DrawScene(void)
 //first person navigation
 void FirstpersonNaviagtion(void)
 {
-// the point where item lies
-
-//gluLookAt(Ex, Ey, Ez, s_atx, s_aty, s_atz,0.0, 1.0, 0.0);
       gluLookAt(Ex, Ey, Ez, Ex + 0.2*scale*10*Sin(zh), Ey+0.2*scale*50*Sin(theta), Ez - 0.2*scale*10*Cos(zh),0.0, 1.0, 0.0);
 }
 
@@ -1209,8 +1145,6 @@ static void ball(double x,double y,double z,double r)
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
    int th,ph;
-   //float yellow[] = {1.0,1.0,0.0,1.0};
-   //float Emission[]  = {0.0,0.0,0.01*emission,1.0};
    //  Save transformation
    glPushMatrix();
    //  Offset, scale and rotate
@@ -1218,9 +1152,6 @@ static void ball(double x,double y,double z,double r)
    glScaled(r,r,r);
    //  White ball
    glColor3f(1,1,1);
-   //glMaterialf(GL_FRONT,GL_SHININESS,shiny);
-   //glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
-   //glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
    //  Bands of latitude
    for (ph=-90;ph<90;ph+=inc)
    {
@@ -1237,7 +1168,7 @@ static void ball(double x,double y,double z,double r)
 }
 
 /* 
- *  Draw sky box
+ *  Draw day sky box
  */
 static void Sky(double D)
 {
@@ -1286,7 +1217,7 @@ static void Sky(double D)
 }
 
 /* 
- *  Draw sky box
+ *  Draw night sky box
  */
 static void Sky1(double D)
 {
@@ -1545,24 +1476,19 @@ void drawCourtTower(float R, float G, float B){
          x = Cos((float)i/(float)NumOfEdges * 360.0);
          z = Sin((float)i/(float)NumOfEdges * 360.0);
          glNormal3f(x,YtoLowerHeight,z);
-         //glTexCoord2f(x*0.1*3,z*0.1*2); 
          glVertex3f((x)*0.1+1,18.5,(z)*0.1+1);
-         //same x,z and NVect:
-         //glTexCoord2f(x*3,z*2); 
+         //same x,z and NVect: 
          glVertex3f(1.0,20.0,1.0);
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(x,YtoLowerHeight,z);
-      //glTexCoord2f(x*0.1*3,z*0.1*2); 
+      glNormal3f(x,YtoLowerHeight,z); 
       glVertex3f((x)*0.1+1,18.5,(z)*0.1+1);
       //same x,z and NVect:
-      //glTexCoord2f(x*3,z*2); 
       glVertex3f(1.0,20.0,1.0);
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
-      //glDisable(GL_TEXTURE_2D);
 }
 
 /*
@@ -1585,12 +1511,10 @@ void drawTorus(double r, double c,int rSeg, int cSeg)
   glBindTexture(GL_TEXTURE_2D, texture[1]);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-  //const double PI = 3.1415926535897932384626433832795;
   const double TAU = 2 * PI;
 
   for (int i = 0; i < rSeg; i++) {
     glBegin(GL_QUAD_STRIP);
-    //glNormal3f(0.0,0.0,-1.0);
     for (int j = 0; j <= cSeg; j++) {
       for (int k = 0; k <= 1; k++) {
         double s = (i + k) % rSeg + 0.5;
@@ -1678,30 +1602,7 @@ void drawCourt(){
       //glBegin(GL_TRIANGLES);
       int i;
       float x,z;
-      /*for ( i = 0; i < NumOfEdges-1; i++)
-      {  
-         x = Cos((float)i/(float)NumOfEdges * 360.0);
-         z = Sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,1.0,0.0);
-         glVertex3f(0.0,0.0,0.0);
-         glVertex3f(x*20,0.0,z*20);
-
-         x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(0.0,1.0,0.0);
-         glVertex3f(x*20,0.0,z*20);
-      }
-      x = Cos((float)i/(float)NumOfEdges * 360.0);
-      z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,1.0,0.0);
-      glVertex3f(0.0,0.0,0.0);
-      glVertex3f(x*20,0.0,z*20);
-      x = Cos(1.0/(float)NumOfEdges * 360.0);
-      z = Sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(0.0,1.0,0.0);
-      glVertex3f(x*20,0.0,z*20);
-      glColor3f(1.0,1.0,1.0);
-      glEnd();*/
+     
       glPopMatrix();
       glDisable(GL_TEXTURE_2D);
 
@@ -2425,43 +2326,7 @@ void drawTower(){
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
    glColor3f(0.683,0.930,0.930);
    glBindTexture(GL_TEXTURE_2D,texture[2]);
-   /*glBegin(GL_QUADS);
-      //Create the lower part of the tower:
-      int i=0;
-      
-      //y is constant when the height is same 
-      YtoLowerHeight = (Radius-1.0) / (0.0-LowerHeight) * (Radius-1.0);
-
-      for ( i = 0; i < NumOfEdges-1; i++)    //create a circle
-      {  
-         x = cos((float)i/(float)NumOfEdges * 360.0);
-         z = sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord3f(x*Radius,0.0,z*Radius); glVertex3f(x*Radius,0.0,z*Radius);
-         //same x,z and NVect:
-         glTexCoord3f(x,LowerHeight,z); glVertex3f(x,LowerHeight,z);
-
-         x = cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord3f(x,LowerHeight,z); glVertex3f(x,LowerHeight,z);
-         //same x,z and NVect:
-         glTexCoord3f(x*Radius,0.0,z*Radius); glVertex3f(x*Radius,0.0,z*Radius);
-      }
-     x = cos((float)i/(float)NumOfEdges * 360.0);
-      z = sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord3f(x*Radius,0.0,z*Radius); glVertex3f(x*Radius,0.0,z*Radius);
-      //same x,z and NVect:
-      glTexCoord3f(x,LowerHeight,z); glVertex3f(x,LowerHeight,z);
-      x = cos(0.0/(float)NumOfEdges * 360.0);
-      z = sin(0.0/(float)NumOfEdges * 360.0);
-      glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord3f(x,LowerHeight,z); glVertex3f(x,LowerHeight,z);
-      //same x,z and NVect:
-      glTexCoord3f(x*Radius,0.0,z*Radius); glVertex3f(x*Radius,0.0,z*Radius);
-      glColor3f(1.0,1.0,1.0);
-      glEnd();*/
+   
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
       int i=0;
@@ -2478,12 +2343,7 @@ void drawTower(){
          //same x,z and NVect:
          glTexCoord2f(x*3,z*2); glVertex3f(x,LowerHeight,z);
 
-         /*x = cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(x,YtoLowerHeight,z);
-         glTexCoord3f(x,LowerHeight,z); glVertex3f(x,LowerHeight,z);
-         //same x,z and NVect:
-         glTexCoord3f(x*Radius,0.0,z*Radius); glVertex3f(x*Radius,0.0,z*Radius);*/
+        
       }
      x = Cos((float)i/(float)NumOfEdges * 360.0);
       z = Sin((float)i/(float)NumOfEdges * 360.0);
@@ -2491,12 +2351,6 @@ void drawTower(){
       glTexCoord2f(x*Radius*3,z*Radius*2); glVertex3f(x*Radius,0.0,z*Radius);
       //same x,z and NVect:
       glTexCoord2f(x*3,z*2); glVertex3f(x,LowerHeight,z);
-      /*x = cos(1.0/(float)NumOfEdges * 360.0);
-      z = sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(x,YtoLowerHeight,z);
-      glTexCoord3f(x,LowerHeight,z); glVertex3f(x,LowerHeight,z);
-      //same x,z and NVect:
-      glTexCoord3f(x*Radius,0.0,z*Radius); glVertex3f(x*Radius,0.0,z*Radius);*/
       glColor3f(1.0,1.0,1.0);
       glEnd();
       glPopMatrix();
@@ -2509,32 +2363,7 @@ void drawTower(){
    glColor3f(0.688,0.766,0.867);
    glBindTexture(GL_TEXTURE_2D,texture[3]);
    
-      /*glBegin(GL_QUADS);
-      for ( i = 0; i < NumOfEdges; i++)
-      {  
-         x = Cos((float)i/(float)NumOfEdges * 360.0);
-         z = Sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(x,0.0,z);
-         glTexCoord2f(0,LowerHeight/4); glVertex3f(x,LowerHeight,z);
-         glTexCoord2f(1,HigherHeight/4); glVertex3f(x,HigherHeight,z);
-
-         x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(x,0.0,z);
-         glTexCoord2f(1,HigherHeight/4); glVertex3f(x,HigherHeight,z);
-         glTexCoord2f(0,LowerHeight/4); glVertex3f(x,LowerHeight,z);
-      }
-      x = Cos((float)i/(float)NumOfEdges * 360.0);
-      z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(x,0.0,z);
-      glTexCoord2f(0,LowerHeight/4); glVertex3f(x,LowerHeight,z);
-      glTexCoord2f(1,HigherHeight/4); glVertex3f(x,HigherHeight,z);
-      x = Cos(1.0/(float)NumOfEdges * 360.0);
-      z = Sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(x,0.0,z);
-     glTexCoord2f(1,HigherHeight/4);  glVertex3f(x,HigherHeight,z);
-      glTexCoord2f(0,LowerHeight/4); glVertex3f(x,LowerHeight,z);
-      glEnd();*/
+    
    glBegin(GL_QUAD_STRIP);
       for ( i = 0; i < NumOfEdges; i++)
       {  
@@ -3301,39 +3130,7 @@ void drawhousetower(){
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
    glColor3f(1.0,0.867,0.676);
    glBindTexture(GL_TEXTURE_2D,texture[6]);
-   /*glBegin(GL_QUADS);
-   int i=0;
-   float x,z;
-   // draw lowerpart
    
-      for ( i = 0; i < NumOfEdges-1; i++)
-      {  
-         x = cos((float)i/(float)NumOfEdges * 360.0);
-         z = sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(x,0.0,z);
-         glTexCoord3f(x*0.8,0.0,z*0.8); glVertex3f(x*0.8,0.0,z*0.8);
-         glTexCoord3f(x*0.8,HouseHeight,z*0.8); glVertex3f(x*0.8,HouseHeight,z*0.8);
-
-         x = cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(x,0.0,z);
-         glTexCoord3f(x*0.8,HouseHeight,z*0.8);glVertex3f(x*0.8,HouseHeight,z*0.8);
-         glTexCoord3f(x*0.8,0.0,z*0.8);glVertex3f(x*0.8,0.0,z*0.8);
-      }
-      x = cos((float)i/(float)NumOfEdges * 360.0);
-      z = sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(x,0.0,z);
-      glTexCoord3f(x*0.8,0.0,z*0.8);glVertex3f(x*0.8,0.0,z*0.8);
-      glTexCoord3f(x*0.8,HouseHeight,z*0.8);glVertex3f(x*0.8,HouseHeight,z*0.8);
-      x = cos(1.0/(float)NumOfEdges * 360.0);
-      z = sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(x,0.0,z);
-      glTexCoord3f(x*0.8,HouseHeight,z*0.8);glVertex3f(x*0.8,HouseHeight,z*0.8);
-      glTexCoord3f(x*0.8,0.0,z*0.8);glVertex3f(x*0.8,0.0,z*0.8);
-   glColor3f(1.0,1.0,1.0);
-      glEnd();
-      glPopMatrix();
-      glDisable(GL_TEXTURE_2D);*/
       glBegin(GL_QUAD_STRIP);
       int i;
       float x,z;
@@ -3360,32 +3157,7 @@ void drawhousetower(){
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
    glColor3f(0.867,0.719,0.527);
    glBindTexture(GL_TEXTURE_2D,texture[6]);
-      /*glBegin(GL_QUADS);
-      
-      for ( i = 0; i < NumOfEdges-1; i++)
-      {  
-         x = cos((float)i/(float)NumOfEdges * 360.0);
-         z = sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(x,0.0,z);
-         glTexCoord3f(x,HouseHeight,z); glVertex3f(x,HouseHeight,z);
-         glTexCoord3f(x,HouseHeight+2.0,z); glVertex3f(x,HouseHeight+2.0,z);
-
-         x = cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(x,0.0,z);
-         glTexCoord3f(x,HouseHeight+2.0,z); glVertex3f(x,HouseHeight+2.0,z);
-         glTexCoord3f(x,HouseHeight,z); glVertex3f(x,HouseHeight,z);
-      }
-      x = cos((float)i/(float)NumOfEdges * 360.0);
-      z = sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(x,0.0,z);
-      glTexCoord3f(x,HouseHeight,z);  glVertex3f(x,HouseHeight,z);
-      glTexCoord3f(x,HouseHeight+2.0,z);  glVertex3f(x,HouseHeight+2.0,z);
-      x = cos(1.0/(float)NumOfEdges * 360.0);
-      z = sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(x,0.0,z);
-      glTexCoord3f(x,HouseHeight+2.0,z);  glVertex3f(x,HouseHeight+2.0,z);
-      glTexCoord3f(x,HouseHeight,z); glVertex3f(x,HouseHeight,z);*/
+     
    glBegin(GL_QUAD_STRIP);
       for ( i = 0; i < NumOfEdges; i++)
       {  
@@ -3413,33 +3185,7 @@ void drawhousetower(){
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
    glColor3f(0.543,0.270,0.074);
    glBindTexture(GL_TEXTURE_2D,texture[1]);
-      /*glBegin(GL_TRIANGLES);
-      
-      for ( i = 0; i < NumOfEdges-1; i++)
-      {  
-         x = Cos((float)i/(float)NumOfEdges * 360.0);
-         z = Sin((float)i/(float)NumOfEdges * 360.0);
-         glNormal3f(x,YtoPoint,z);
-         glTexCoord3f(x,HouseHeight+2.0,z); glVertex3f(x,HouseHeight+2.0,z);
-         glTexCoord3f(0.0,HouseHeight+4.0,0.0); glVertex3f(0.0,HouseHeight+4.0,0.0);
-         
-
-         x = Cos((float)(i+1)/(float)NumOfEdges * 360.0);
-         z = Sin((float)(i+1)/(float)NumOfEdges * 360.0);
-         glNormal3f(x,YtoPoint,z);
-         glTexCoord3f(x,HouseHeight+2.0,z); glVertex3f(x,HouseHeight+2.0,z);
-         //glTexCoord3f(x,HouseHeight+2.0,z); 
-      }
-      x = Cos((float)i/(float)NumOfEdges * 360.0);
-      z = Sin((float)i/(float)NumOfEdges * 360.0);
-      glNormal3f(x,YtoPoint,z);
-      glTexCoord3f(0.0,HouseHeight+4.0,0.0); glVertex3f(0.0,HouseHeight+4.0,0.0);
-      glTexCoord3f(x,HouseHeight+2.0,z); glVertex3f(x,HouseHeight+2.0,z);
-      x = Cos(1.0/(float)NumOfEdges * 360.0);
-      z = Sin(1.0/(float)NumOfEdges * 360.0);
-      glNormal3f(x,YtoPoint,z);
-      glTexCoord3f(x,HouseHeight+2.0,z); glVertex3f(x,HouseHeight+2.0,z);
-      //glTexCoord3f(x,HouseHeight+2.0,z); */
+    
    glBegin(GL_QUAD_STRIP);
       //Create the lower part of the tower:
 
@@ -3560,31 +3306,7 @@ void drawhouse(){
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
 
-   /*glPushMatrix();
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(1.0,1.0,0.0);
-   glBindTexture(GL_TEXTURE_2D,texture[8]);
-
-   glBegin(GL_TRIANGLES);
-   glNormal3f(0.0,0.0,-1.0);
-
-   glTexCoord3f(3.5/2,HouseHeight/2,0.0); glVertex3f(3.5,HouseHeight,0.0);
-   glTexCoord3f(5.5/2,HouseHeight/2,0.0); glVertex3f(5.5,HouseHeight,0.0);
-   glTexCoord3f(4.5/2,(HouseCenterHeight+1.0)/2,0.0); glVertex3f(4.5,HouseCenterHeight+1.0,0.0);
-   glColor3f(1.0,1.0,1.0);
-   glEnd();
-
-    glBegin(GL_TRIANGLES);
-   glNormal3f(0.0,0.0,1.0);
-   glColor3f(1.0,1.0,0.0);
-   glTexCoord3f(3.5/2,HouseHeight/2,0.01/2); glVertex3f(3.5,HouseHeight,0.01);
-   glTexCoord3f(5.5/2,HouseHeight/2,0.01/2); glVertex3f(5.5,HouseHeight,0.01);
-   glTexCoord3f(4.5/2,(HouseCenterHeight+1.0)/2,0.01/2); glVertex3f(4.5,HouseCenterHeight+1.0,0.01);
-   glColor3f(1.0,1.0,1.0);
-   glEnd();
-   glPopMatrix();
-   glDisable(GL_TEXTURE_2D);*/
+   
    
 }
 
@@ -3704,6 +3426,8 @@ void drawGround(){
    glDisable(GL_TEXTURE_2D);
 }
 
+//I load an obj of bridge here but when I run the program it gets a little bit slow
+//so I comment them out, but these code will work!
 /*void drawBridge(){
   float RGBA[] = {1,1,1,1};
   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
@@ -3735,11 +3459,7 @@ void display()
       double Ez = +2*dim*Cos(th)*Cos(ph);
       gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
    }
-   /*else if (mode_project==0)
-   {
-         glRotated(ph,1,0,0);
-         glRotated(th,0,1,0);
-   }*/
+
    else if (mode_project==2){
       // set parameters for glulookat()
     fov = 40;
@@ -4119,14 +3839,7 @@ void idle()
   if (g_timePassedSinceStart > 1.7f)
   {
     g_bExcitersInUse = false;  //stop the exciters
-  }
-/*  //ENABLE THE FOLLOWING LINES FOR A RAIN EFFECT
-  int randomNumber = rand();
-  if (randomNumber < NUM_OSCILLATORS)
-  {
-    Oscillators[randomNumber].y = -0.05;
-  }
-  */
+}
 
 
   UpdateScene(false,dtime,g_timePassedSinceStart);
