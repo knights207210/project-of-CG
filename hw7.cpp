@@ -36,6 +36,7 @@
  */
 #include "CSCIx229.h"
 #include <vector>
+#include <iostream>
 #define PI 3.14159265359
 #define NUM_X_OSCILLATORS   150
 #define NUM_Z_OSCILLATORS   150
@@ -50,6 +51,10 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+int width_win = 400;
+int height_win = 400;
+float mouseX =0;
+float mouseY =0;
 int zh=0;       // rotate around z
 int NumOfEdges=50;   //to make up tower's circles and number of teeth on tower
 float LowerHeight=1.0;    // tower's parameters
@@ -110,6 +115,369 @@ int numberOfTrees = 30;
 int obj;
 
 unsigned int texture[13];  //texture names
+
+#define SUN       100               // This is the object ID for the SUN  
+#define EARTH     101               // This is the object ID for the EARTH
+#define PLUTO     102 
+
+
+/*
+ *  Draw vertex in polar coordinates with normal
+ */
+static void Vertex(double th,double ph)
+{
+   double x = Sin(th)*Cos(ph);
+   double y = Cos(th)*Cos(ph);
+   double z =         Sin(ph);
+   //  For a sphere at the origin, the position
+   //  and normal vectors are the same
+   glNormal3d(x,y,z);
+   glVertex3d(x,y,z);
+}
+/*
+ *  Draw a ball
+ *     at (x,y,z)
+ *     radius (r)
+ */
+static void ball(double x,double y,double z,double r)
+{
+  float white[] = {1,1,1,1};
+   float Emission[]  = {0.01*emission,0.0,0.0,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+   int th,ph;
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glScaled(r,r,r);
+   //  White ball
+   glColor3f(1,1,1);
+   //  Bands of latitude
+   for (ph=-90;ph<90;ph+=inc)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0;th<=360;th+=2*inc)
+      {
+         Vertex(th,ph);
+         Vertex(th,ph+inc);
+      }
+      glEnd();
+   }
+   //  Undo transofrmations
+   glPopMatrix();
+}
+
+static void cube1(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th)
+{
+   float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV , GL_TEXTURE_ENV_MODE , mode?GL_REPLACE:GL_MODULATE);
+   glColor3f(1,1,1);
+   glBindTexture(GL_TEXTURE_2D,texture[11]);
+   //  Save transformation
+   glPushMatrix();
+   //  Offset
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx,dy,dz);
+   //  Cube
+   glBegin(GL_QUADS);
+   //  Right
+   //glColor3f(0,0.749,1);
+   glNormal3f(0,0,1);
+   glTexCoord2f(0,0);glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0);glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1);glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1);glVertex3f(-1,+1, 1);
+   //  Left
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);glVertex3f(+1,-1,-1);
+    glTexCoord2f(1,0);glVertex3f(-1,-1,-1);
+    glTexCoord2f(1,1);glVertex3f(-1,+1,-1);
+    glTexCoord2f(0,1);glVertex3f(+1,+1,-1);
+   //  Front
+
+  // glColor3f(0,0.49,1);
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);glVertex3f(+1,-1,+1);
+    glTexCoord2f(1,0);glVertex3f(+1,-1,-1);
+    glTexCoord2f(1,1);glVertex3f(+1,+1,-1);
+    glTexCoord2f(0,1);glVertex3f(+1,+1,+1);
+   //  back
+   //glColor3f(0.69,0.769,0.871);
+   glNormal3f(-1, 0, 0);
+  glTexCoord2f(0,0);glVertex3f(-1,-1,-1);
+    glTexCoord2f(1,0);glVertex3f(-1,-1,+1);
+    glTexCoord2f(1,1);glVertex3f(-1,+1,+1);
+    glTexCoord2f(0,1);glVertex3f(-1,+1,-1);
+   //  Top
+   //glColor3f(0.541,0.169,0.886);
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0);glVertex3f(-1,+1,+1);
+    glTexCoord2f(1,0);glVertex3f(+1,+1,+1);
+    glTexCoord2f(1,1);glVertex3f(+1,+1,-1);
+    glTexCoord2f(0,1);glVertex3f(-1,+1,-1);
+   //  Bottom
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0);glVertex3f(-1,-1,-1);
+    glTexCoord2f(1,0);glVertex3f(+1,-1,-1);
+    glTexCoord2f(1,1);glVertex3f(+1,-1,+1);
+    glTexCoord2f(0,1);glVertex3f(-1,-1,+1);
+   //  End
+   glEnd();
+   //  Undo transformations
+   glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
+ }
+
+float SunRotation   = 90;               // This holds our sun's current rotation
+float EarthRotation = 90;               // This holds our earth's current rotation
+float PlutoRotation = 90;
+ void RenderScene() 
+{
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear The Screen And The Depth Buffer
+  //glLoadIdentity();                 // Reset The matrix
+
+  // We make our position a bit high and back to view the whole scene
+
+    //    Position      View     Up Vector
+  //gluLookAt(Ex, Ey, Ez,     0, 0, 0,     0, 1, 0);   // This determines where the camera's position and view is
+
+  glInitNames();                    // This clears the name stack so we always start with 0 names.
+
+  GLUquadricObj *pObj = gluNewQuadric();        // Get a new Quadric off the stack
+
+  gluQuadricTexture(pObj, true);            // This turns on texture coordinates for our Quadrics
+
+  // Bind the sun texture to the sun quadratic
+  glBindTexture(GL_TEXTURE_2D, texture[0]);     // Bind the Sun texture to the sun
+
+  // Below we call glPushName().  We need to pass in an ID that we can check later that will
+  // be associated with the polygons drawn next.  Here is how it works.  We call glPushName()
+  // and pass an ID.  This pushes this ID onto the name stack.  Then we draw any primitives 
+  // or shapes, then we call glPopName() which stops assigning polys to that object name.  
+  // We now have a group of polygons that are given an ID.  Our ID SUN now refers to the 
+  // sun Quadric we draw below.
+
+ glPushName(SUN);                  // Push on our SUN label (IMPORTANT)
+
+  // Here we push on a new matrix so we don't affect any other quadrics.
+  // We first translate the quadric to the origin (0, 0, 0), Then we rotate it
+  // about the Y axis.  This gives it the spinning effect.  Then we draw the
+  // largest of the spheres.  This represents the sun with its texture map.
+  
+  glPushMatrix();                   // Push on a new matrix scope
+    glTranslatef(0, 0, 0);              // Translate this sphere to the left
+    glRotatef(SunRotation, 0, 1.0, 0);        // Rotate the sphere around the Y axis to make it spin
+    gluSphere(pObj, 0.5f, 20, 20);          // Draw the sunwith a radius of 0.5
+   // ball(0,0,0,0.1);
+  glPopMatrix();                    // End the current scope of this matrix
+
+  // Now that we drew the sun, we want to end our Object name.  We call glPopName()
+  // to do that.  Now nothing else will be associated with the SUN ID.
+
+  glPopName();                    // Stop assigning polygons to the SUN label (IMPORTANT)
+
+  // Next, we want to bind the Earth texture to our Earth sphere
+  glBindTexture(GL_TEXTURE_2D, texture[1]);
+
+  // Once again, we want to create a object ID for our earth, so we push on the EARTH ID.
+  // Now, when we draw the next sphere, it will be associated with the EARTH ID.
+
+  glPushName(EARTH);                  // Push on our EARTH label (IMPORTANT)
+
+  // Once again, we want to pop on a new matrix as not to affect any other spheres.
+  // We rotate the sphere by its current rotation value FIRST before we translate it.
+  // This makes it rotate around the origin, which is where the sun is.
+  // Then we rotate it again about the Y-axis to make it spin around itself.
+
+  glPushMatrix();                   // Push on a new matrix scope   
+    glRotatef(EarthRotation / 3, 0, 1.0, 0);    // Rotate the sphere around the origin (the sun)
+    glTranslatef(-2, 0, 0);             // Translate this sphere to the left
+    glRotatef(EarthRotation, 0, 1.0, 0);      // Rotate the sphere to make it spin
+    gluSphere(pObj, 0.2f, 20, 20);          // Draw the sphere with a radius of 0.2 so it's smaller than the sun
+    //ball(1,0,0,0.1);
+  glPopMatrix();                    // End the current scope of this matrix
+
+  // We are done assigning the EARTH object, so we need 
+  // to stop assigning polygons to the current ID.
+
+  glPopName();                    // Stop assigning polygons to the EARTH label (IMPORTANT)
+
+  // Bind the pluto texture to the last sphere
+  glBindTexture(GL_TEXTURE_2D, texture[2]);
+
+  // Finally, we want to be able to click on Pluto, so we need a pluto ID.
+
+  glPushName(PLUTO);                  // Push on our PLUTO label (IMPORTANT)
+
+  // Like we did with the earth, we rotate Pluto around the sun first,
+  // then we translate it farther away from the sun.  Next, we rotate Pluto
+  // around the Y axis to give it some spin.
+
+  // Pass in our empty glBegin()/glEnd() statement because we are using Quadrics.
+  // If we don't do this when using glLoadName(), it will grind to a hault on some cards.
+  //glBegin(GL_LINES);
+  //glEnd();
+
+  glPushMatrix();                   // Push on a new matrix scope
+    glRotatef(PlutoRotation / 2, 0, 1.0, 0);    // Rotate the sphere around the sun
+    glTranslatef(3, 0, 0);              // Translate this sphere farther away from the sun than the earth
+    glRotatef(PlutoRotation, 0, 1.0, 0);      // Rotate the sphere around itself to produce the spin
+    gluSphere(pObj, 0.3f, 20, 20);          // Draw the sphere with a radius of 0.1 (smallest planet)
+    //ball(2,0,0,0.1);
+  glPopMatrix();                    // End the current scope of this matrix
+
+  // We are finished with the PLUTO object ID, so we need to pop it off the name stack.
+
+  glPopName();                    // Stop assigning polygons to our PLUTO label (IMPORTANT)
+
+  //glutSwapBuffers();                 // Swap the backbuffers to the foreground
+
+  gluDeleteQuadric(pObj);               // Free the Quadric
+
+  // Below we increase the rotations for each sphere.
+//
+  //SunRotation   += 0.2f;                // Rotate the sun slowly
+  //EarthRotation += 0.5f;                // Increase the rotation for the each
+  //PlutoRotation += 0.6f;                // Make pluto go the fastest
+}
+
+
+// 3D selection
+//This takes the cursor's x and y position and returns the closet object
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+int RetrieveObjectID(int x, int y)
+{
+  int objectsFound = 0;               // This will hold the amount of objects clicked
+  int viewportCoords[4] = {0};            // We need an array to hold our view port coordinates
+
+  // This will hold the ID's of the objects we click on.
+  // We make it an arbitrary number of 32 because openGL also stores other information
+  // that we don't care about.  There is about 4 slots of info for every object ID taken up.
+  unsigned int selectBuffer[32] = {0};        
+                            
+  // glSelectBuffer is what we register our selection buffer with.  The first parameter
+  // is the size of our array.  The next parameter is the buffer to store the information found.
+  // More information on the information that will be stored in selectBuffer is further below.
+
+  glSelectBuffer(32, selectBuffer);         // Setup our selection buffer to accept object ID's
+
+  // This function returns information about many things in OpenGL.  We pass in GL_VIEWPORT
+  // to get the view port coordinates.  It saves it like a RECT with {top, left, bottom, right}
+
+  glGetIntegerv(GL_VIEWPORT, viewportCoords);     // Get the current view port coordinates
+
+  // Now we want to get out of our GL_MODELVIEW matrix and start effecting our
+  // GL_PROJECTION matrix.  This allows us to check our X and Y coords against 3D space.
+
+  glMatrixMode(GL_PROJECTION);            // We want to now effect our projection matrix
+  
+  glPushMatrix();                   // We push on a new matrix so we don't effect our 3D projection
+
+    // This makes it so it doesn't change the frame buffer if we render into it, instead, 
+    // a record of the names of primitives that would have been drawn if the render mode was
+    // GL_RENDER are now stored in the selection array (selectBuffer).
+
+    glRenderMode(GL_SELECT);            // Allows us to render the objects, but not change the frame buffer
+
+    glLoadIdentity();               // Reset our projection matrix
+
+    // gluPickMatrix allows us to create a projection matrix that is around our
+    // cursor.  This basically only allows rendering in the region that we specify.
+    // If an object is rendered into that region, then it saves that objects ID for us (The magic).
+    // The first 2 parameters are the X and Y position to start from, then the next 2
+    // are the width and height of the region from the starting point.  The last parameter is
+    // of course our view port coordinates.  You will notice we subtract "y" from the
+    // BOTTOM view port coordinate.  We do this to flip the Y coordinates around.  The 0 y
+    // coordinate starts from the bottom, which is opposite to window's coordinates.
+    // We also give a 2 by 2 region to look for an object in.  This can be changed to preference.
+
+    gluPickMatrix(x, viewportCoords[3] - y, 20, 20, viewportCoords);
+
+    // Next, we just call our normal gluPerspective() function, exactly as we did on startup.
+    // This is to multiply the perspective matrix by the pick matrix we created up above. 
+
+    gluPerspective(45.0f,(float)width_win/(float)height_win,0.1f,150.0f);
+    
+    glMatrixMode(GL_MODELVIEW);           // Go back into our model view matrix
+  
+    RenderScene();                  // Now we render into our selective mode to pinpoint clicked objects
+    // If we return to our normal render mode from select mode, glRenderMode returns
+    // the number of objects that were found in our specified region (specified in gluPickMatrix())
+
+    objectsFound = glRenderMode(GL_RENDER);     // Return to render mode and get the number of objects found
+
+    glMatrixMode(GL_PROJECTION);          // Put our projection matrix back to normal.
+  glPopMatrix();                    // Stop effecting our projection matrix
+
+  glMatrixMode(GL_MODELVIEW);             // Go back to our normal model view matrix
+
+  // PHEW!  That was some stuff confusing stuff.  Now we are out of the clear and should have
+  // an ID of the object we clicked on.  objectsFound should be at least 1 if we found an object.
+
+  if (objectsFound > 0)
+  {   
+    // If we found more than one object, we need to check the depth values
+    // of all the objects found.  The object with the LEAST depth value is
+    // the closest object that we clicked on.  Depending on what you are doing,
+    // you might want ALL the objects that you clicked on (if some objects were
+    // behind the closest one), but for this tutorial we just care about the one
+    // in front.  So, how do we get the depth value?  Well, The selectionBuffer
+    // holds it.  For every object there is 4 values.  The first value is
+    // "the number of names in the name stack at the time of the event, followed 
+    // by the minimum and maximum depth values of all vertices that hit since the 
+    // previous event, then followed by the name stack contents, bottom name first." - MSDN
+    // The only ones we care about are the minimum depth value (the second value) and
+    // the object ID that was passed into glLoadName() (This is the fourth value).
+    // So, [0 - 3] is the first object's data, [4 - 7] is the second object's data, etc...
+    // Be carefull though, because if you are displaying 2D text in front, it will
+    // always find that as the lowest object.  So make sure you disable text when
+    // rendering the screen for the object test.  I use a flag for RenderScene().
+    // So, lets get the object with the lowest depth!   
+
+    // Set the lowest depth to the first object to start it off.
+    // 1 is the first object's minimum Z value.
+    // We use an unsigned int so we don't get a warning with selectBuffer below.
+    unsigned int lowestDepth = selectBuffer[1];
+
+    // Set the selected object to the first object to start it off.
+    // 3 is the first object's object ID we passed into glLoadName().
+    int selectedObject = selectBuffer[3];
+
+    // Go through all of the objects found, but start at the second one
+    for(int i = 1; i < objectsFound; i++)
+    {
+      // Check if the current objects depth is lower than the current lowest
+      // Notice we times i by 4 (4 values for each object) and add 1 for the depth.
+      if(selectBuffer[(i * 4) + 1] < lowestDepth)
+      {
+        // Set the current lowest depth
+        lowestDepth = selectBuffer[(i * 4) + 1];
+
+        // Set the current object ID
+        selectedObject = selectBuffer[(i * 4) + 3];
+      }
+    }
+    
+    // Return the selected object
+    return selectedObject;
+  }
+
+  // We didn't click on any objects so return 0
+  return 0;                     
+}
+
+
 //waterwave simulation
 //-------------------------------------------------------------------------------------------------------------------
 struct SOscillator
@@ -1118,54 +1486,8 @@ void FirstpersonNaviagtion(void)
       gluLookAt(Ex, Ey, Ez, Ex + 0.2*scale*10*Sin(zh), Ey+0.2*scale*50*Sin(theta), Ez - 0.2*scale*10*Cos(zh),0.0, 1.0, 0.0);
 }
 
-/*
- *  Draw vertex in polar coordinates with normal
- */
-static void Vertex(double th,double ph)
-{
-   double x = Sin(th)*Cos(ph);
-   double y = Cos(th)*Cos(ph);
-   double z =         Sin(ph);
-   //  For a sphere at the origin, the position
-   //  and normal vectors are the same
-   glNormal3d(x,y,z);
-   glVertex3d(x,y,z);
-}
 
-/*
- *  Draw a ball
- *     at (x,y,z)
- *     radius (r)
- */
-static void ball(double x,double y,double z,double r)
-{
-  float white[] = {1,1,1,1};
-   float Emission[]  = {0.01*emission,0.0,0.0,1.0};
-   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
-   int th,ph;
-   //  Save transformation
-   glPushMatrix();
-   //  Offset, scale and rotate
-   glTranslated(x,y,z);
-   glScaled(r,r,r);
-   //  White ball
-   glColor3f(1,1,1);
-   //  Bands of latitude
-   for (ph=-90;ph<90;ph+=inc)
-   {
-      glBegin(GL_QUAD_STRIP);
-      for (th=0;th<=360;th+=2*inc)
-      {
-         Vertex(th,ph);
-         Vertex(th,ph+inc);
-      }
-      glEnd();
-   }
-   //  Undo transofrmations
-   glPopMatrix();
-}
+
 
 /* 
  *  Draw day sky box
@@ -2453,74 +2775,7 @@ void drawTower(){
 glColor3f(1.0,1.0,1.0);
 }
 
-static void cube1(double x,double y,double z,
-                 double dx,double dy,double dz,
-                 double th)
-{
-   float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
-   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvi(GL_TEXTURE_ENV , GL_TEXTURE_ENV_MODE , mode?GL_REPLACE:GL_MODULATE);
-   glColor3f(1,1,1);
-   glBindTexture(GL_TEXTURE_2D,texture[11]);
-   //  Save transformation
-   glPushMatrix();
-   //  Offset
-   glTranslated(x,y,z);
-   glRotated(th,0,1,0);
-   glScaled(dx,dy,dz);
-   //  Cube
-   glBegin(GL_QUADS);
-   //  Right
-   //glColor3f(0,0.749,1);
-   glNormal3f(0,0,1);
-   glTexCoord2f(0,0);glVertex3f(-1,-1, 1);
-   glTexCoord2f(1,0);glVertex3f(+1,-1, 1);
-   glTexCoord2f(1,1);glVertex3f(+1,+1, 1);
-   glTexCoord2f(0,1);glVertex3f(-1,+1, 1);
-   //  Left
-   glNormal3f( 0, 0,-1);
-   glTexCoord2f(0,0);glVertex3f(+1,-1,-1);
-    glTexCoord2f(1,0);glVertex3f(-1,-1,-1);
-    glTexCoord2f(1,1);glVertex3f(-1,+1,-1);
-    glTexCoord2f(0,1);glVertex3f(+1,+1,-1);
-   //  Front
 
-  // glColor3f(0,0.49,1);
-   glNormal3f(+1, 0, 0);
-   glTexCoord2f(0,0);glVertex3f(+1,-1,+1);
-    glTexCoord2f(1,0);glVertex3f(+1,-1,-1);
-    glTexCoord2f(1,1);glVertex3f(+1,+1,-1);
-    glTexCoord2f(0,1);glVertex3f(+1,+1,+1);
-   //  back
-   //glColor3f(0.69,0.769,0.871);
-   glNormal3f(-1, 0, 0);
-  glTexCoord2f(0,0);glVertex3f(-1,-1,-1);
-    glTexCoord2f(1,0);glVertex3f(-1,-1,+1);
-    glTexCoord2f(1,1);glVertex3f(-1,+1,+1);
-    glTexCoord2f(0,1);glVertex3f(-1,+1,-1);
-   //  Top
-   //glColor3f(0.541,0.169,0.886);
-   glNormal3f( 0,+1, 0);
-   glTexCoord2f(0,0);glVertex3f(-1,+1,+1);
-    glTexCoord2f(1,0);glVertex3f(+1,+1,+1);
-    glTexCoord2f(1,1);glVertex3f(+1,+1,-1);
-    glTexCoord2f(0,1);glVertex3f(-1,+1,-1);
-   //  Bottom
-   glNormal3f( 0,-one, 0);
-   glTexCoord2f(0,0);glVertex3f(-1,-1,-1);
-    glTexCoord2f(1,0);glVertex3f(+1,-1,-1);
-    glTexCoord2f(1,1);glVertex3f(+1,-1,+1);
-    glTexCoord2f(0,1);glVertex3f(-1,-1,+1);
-   //  End
-   glEnd();
-   //  Undo transformations
-   glPopMatrix();
-   glDisable(GL_TEXTURE_2D);
- }
 /*
  * draw the board
  */
@@ -3471,12 +3726,12 @@ void display()
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
 
-   if(box) {
+   /*if(box) {
     Sky(3.5*dim);
   }
    else{
     Sky1(3.5*dim);
-  }
+  }*/
    //  Light switch
    if (light)
    {
@@ -3538,7 +3793,7 @@ void display()
 
 }
 
-drawchair();
+//drawchair();
 
 //partical engine
 if(firework&&mode_project == 2){
@@ -3558,7 +3813,7 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
   glPopMatrix();
 }
 
-glPushMatrix();
+/*glPushMatrix();
  glTranslatef(-7.0,0.0,0.5);
 clock_t iNowTime1 = clock();
 float timePassed1 = (float)(iNowTime1 - g_iLastRenderTime1)/CLOCKS_PER_SEC;
@@ -3578,7 +3833,7 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
   g_ParticleSystem4.Render();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
-
+*/
 
 
    //  Draw scene
@@ -3592,7 +3847,7 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
    drawBridge();
    glPopMatrix();*/
 
- glPushMatrix();
+ /*glPushMatrix();
  glScalef(0.8,0.8,0.8);
  glTranslatef(40.0,0.0,-5.0);
  drawCourt();
@@ -3771,10 +4026,14 @@ glPushMatrix();
    drawGround();
    glPopMatrix();
 
+   glPushMatrix();
+   cube1(10,1,10,0.1,0.1,0.1,1);
+   glPopMatrix();*/
+
    
 
 
-
+RenderScene();
    
    
    //  Draw axes - no lighting from here on
@@ -4039,11 +4298,33 @@ void key(unsigned char ch,int x,int y)
    glutPostRedisplay();
 }
 
+void mouseCB(int button, int state, int x, int y)
+{
+    mouseX = x;
+    mouseY = y;
+
+    if(button == GLUT_LEFT_BUTTON)
+    {
+        mouseX = x;
+    mouseY = y;
+    }
+
+    else if(button == GLUT_RIGHT_BUTTON)
+    {
+        mouseX = x;
+    mouseY = y;
+  }
+}
+
+
+
 /*
  *  GLUT calls this routine when the window is resized
  */
 void reshape(int width,int height)
 {
+  width_win = width;
+  height_win = height;
    //  Ratio of the width to the height of the window
    asp = (height>0) ? (double)width/height : 1;
    //  Set the viewport to the entire window
@@ -4095,6 +4376,7 @@ int main(int argc,char* argv[])
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
+   glutMouseFunc(mouseCB);
    //  Pass control to GLUT so it can interact with the user
    //  Load textures
    InitParticles();
