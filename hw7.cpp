@@ -51,6 +51,7 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+int zh_bat=0;
 int click_broom = 1;
 int click_ball = 1;
 int click_bat = 0;
@@ -4098,7 +4099,7 @@ glPushMatrix();
       glPushMatrix();
       //glRotatef(90,0,0,1);
       glTranslatef(30.5,8.0,-12);
-
+      glRotatef(zh_bat,0,0,1);
       drawBat();
       glPopMatrix();
     }
@@ -4229,6 +4230,11 @@ void special(int key,int x,int y)
       Ey += scale*speed;
     else if(key == GLUT_KEY_F10 && mode_project==2)
       Ey -= scale*speed;
+    else if(key == GLUT_KEY_F7 && mode_project==2)
+    zh_bat += 5;
+
+  else if(key == GLUT_KEY_F8 && mode_project==2)
+    zh_bat -= 5;
 
 
    //  Keep angles to +/-360 degrees
@@ -4357,6 +4363,7 @@ void key(unsigned char ch,int x,int y)
   }
   else if(ch == 'c' || ch == 'C')
     move_light = 1- move_light;
+  
       //  Translate shininess power to value (-1 => 0)
    shiny = shininess<0 ? 0 : pow(2.0,shininess);
    //  Tell GLUT it is necessary to redisplay the scene
