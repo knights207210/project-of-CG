@@ -51,6 +51,10 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+int click_broom = 1;
+int click_ball = 1;
+int click_bat = 0;
+int objID;
 int width_win = 400;
 int height_win = 400;
 float mouseX =0;
@@ -116,9 +120,9 @@ int obj;
 
 unsigned int texture[13];  //texture names
 
-#define SUN       100               // This is the object ID for the SUN  
-#define EARTH     101               // This is the object ID for the EARTH
-#define PLUTO     102 
+#define Broom       100               // This is the object ID for the SUN  
+#define Ball     101               // This is the object ID for the EARTH
+#define Bat     102 
 
 
 /*
@@ -238,9 +242,28 @@ static void cube1(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
  }
 
-float SunRotation   = 90;               // This holds our sun's current rotation
-float EarthRotation = 90;               // This holds our earth's current rotation
-float PlutoRotation = 90;
+
+
+void drawBroom(){
+  float RGBA[] = {1,1,1,1};
+  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  glMaterialf(GL_FRONT,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+  obj = LoadOBJ("Broom.obj");
+  glCallList(obj);
+}
+
+void drawBat(){
+  float RGBA[] = {1,1,1,1};
+  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  glMaterialf(GL_FRONT,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+  obj = LoadOBJ("bat.obj");
+  glCallList(obj);
+}
+
  void RenderScene() 
 {
   //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear The Screen And The Depth Buffer
@@ -253,12 +276,12 @@ float PlutoRotation = 90;
 
   glInitNames();                    // This clears the name stack so we always start with 0 names.
 
-  GLUquadricObj *pObj = gluNewQuadric();        // Get a new Quadric off the stack
+  //GLUquadricObj *pObj = gluNewQuadric();        // Get a new Quadric off the stack
 
-  gluQuadricTexture(pObj, true);            // This turns on texture coordinates for our Quadrics
+  //gluQuadricTexture(pObj, true);            // This turns on texture coordinates for our Quadrics
 
   // Bind the sun texture to the sun quadratic
-  glBindTexture(GL_TEXTURE_2D, texture[0]);     // Bind the Sun texture to the sun
+  //glBindTexture(GL_TEXTURE_2D, texture[0]);     // Bind the Sun texture to the sun
 
   // Below we call glPushName().  We need to pass in an ID that we can check later that will
   // be associated with the polygons drawn next.  Here is how it works.  We call glPushName()
@@ -267,17 +290,14 @@ float PlutoRotation = 90;
   // We now have a group of polygons that are given an ID.  Our ID SUN now refers to the 
   // sun Quadric we draw below.
 
- glPushName(SUN);                  // Push on our SUN label (IMPORTANT)
-
-  // Here we push on a new matrix so we don't affect any other quadrics.
-  // We first translate the quadric to the origin (0, 0, 0), Then we rotate it
-  // about the Y axis.  This gives it the spinning effect.  Then we draw the
-  // largest of the spheres.  This represents the sun with its texture map.
+ glPushName(Broom);                  // Push on our broom label 
   
   glPushMatrix();                   // Push on a new matrix scope
-    glTranslatef(0, 0, 0);              // Translate this sphere to the left
-    glRotatef(SunRotation, 0, 1.0, 0);        // Rotate the sphere around the Y axis to make it spin
-    gluSphere(pObj, 0.5f, 20, 20);          // Draw the sunwith a radius of 0.5
+    //glTranslatef(0, 0, 0);              // Translate this sphere to the left
+    glTranslatef(30,1.0,-5.0);
+    //gluSphere(pObj, 0.5f, 20, 20);          // Draw the sunwith a radius of 0.5
+    if(click_broom)
+    drawBroom();
    // ball(0,0,0,0.1);
   glPopMatrix();                    // End the current scope of this matrix
 
@@ -287,12 +307,12 @@ float PlutoRotation = 90;
   glPopName();                    // Stop assigning polygons to the SUN label (IMPORTANT)
 
   // Next, we want to bind the Earth texture to our Earth sphere
-  glBindTexture(GL_TEXTURE_2D, texture[1]);
+  //glBindTexture(GL_TEXTURE_2D, texture[1]);
 
   // Once again, we want to create a object ID for our earth, so we push on the EARTH ID.
   // Now, when we draw the next sphere, it will be associated with the EARTH ID.
 
-  glPushName(EARTH);                  // Push on our EARTH label (IMPORTANT)
+  glPushName(Ball);                  // Push on our EARTH label (IMPORTANT)
 
   // Once again, we want to pop on a new matrix as not to affect any other spheres.
   // We rotate the sphere by its current rotation value FIRST before we translate it.
@@ -300,11 +320,15 @@ float PlutoRotation = 90;
   // Then we rotate it again about the Y-axis to make it spin around itself.
 
   glPushMatrix();                   // Push on a new matrix scope   
-    glRotatef(EarthRotation / 3, 0, 1.0, 0);    // Rotate the sphere around the origin (the sun)
-    glTranslatef(-2, 0, 0);             // Translate this sphere to the left
-    glRotatef(EarthRotation, 0, 1.0, 0);      // Rotate the sphere to make it spin
-    gluSphere(pObj, 0.2f, 20, 20);          // Draw the sphere with a radius of 0.2 so it's smaller than the sun
-    //ball(1,0,0,0.1);
+    //glTranslatef(-0.2, 0, 0);             // Translate this sphere to the left
+    
+    //gluSphere(pObj, 0.2f, 20, 20);          // Draw the sphere with a radius of 0.2 so it's smaller than the sun
+    if(click_ball){
+      glTranslatef(33,1.0,-5.0);
+    ball(1,0,0,0.2);
+  
+  }
+    
   glPopMatrix();                    // End the current scope of this matrix
 
   // We are done assigning the EARTH object, so we need 
@@ -313,11 +337,11 @@ float PlutoRotation = 90;
   glPopName();                    // Stop assigning polygons to the EARTH label (IMPORTANT)
 
   // Bind the pluto texture to the last sphere
-  glBindTexture(GL_TEXTURE_2D, texture[2]);
+  //glBindTexture(GL_TEXTURE_2D, texture[2]);
 
   // Finally, we want to be able to click on Pluto, so we need a pluto ID.
 
-  glPushName(PLUTO);                  // Push on our PLUTO label (IMPORTANT)
+  glPushName(Bat);                  // Push on our PLUTO label (IMPORTANT)
 
   // Like we did with the earth, we rotate Pluto around the sun first,
   // then we translate it farther away from the sun.  Next, we rotate Pluto
@@ -329,11 +353,11 @@ float PlutoRotation = 90;
   //glEnd();
 
   glPushMatrix();                   // Push on a new matrix scope
-    glRotatef(PlutoRotation / 2, 0, 1.0, 0);    // Rotate the sphere around the sun
-    glTranslatef(3, 0, 0);              // Translate this sphere farther away from the sun than the earth
-    glRotatef(PlutoRotation, 0, 1.0, 0);      // Rotate the sphere around itself to produce the spin
-    gluSphere(pObj, 0.3f, 20, 20);          // Draw the sphere with a radius of 0.1 (smallest planet)
+    glTranslatef(25,1.0,-5.0);
+    //gluSphere(pObj, 0.3f, 20, 20);          // Draw the sphere with a radius of 0.1 (smallest planet)
     //ball(2,0,0,0.1);
+    if(click_bat)
+    drawBat();
   glPopMatrix();                    // End the current scope of this matrix
 
   // We are finished with the PLUTO object ID, so we need to pop it off the name stack.
@@ -342,13 +366,8 @@ float PlutoRotation = 90;
 
   //glutSwapBuffers();                 // Swap the backbuffers to the foreground
 
-  gluDeleteQuadric(pObj);               // Free the Quadric
+  //gluDeleteQuadric(pObj);               // Free the Quadric
 
-  // Below we increase the rotations for each sphere.
-//
-  //SunRotation   += 0.2f;                // Rotate the sun slowly
-  //EarthRotation += 0.5f;                // Increase the rotation for the each
-  //PlutoRotation += 0.6f;                // Make pluto go the fastest
 }
 
 
@@ -3726,12 +3745,12 @@ void display()
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
 
-   /*if(box) {
+   if(box) {
     Sky(3.5*dim);
   }
    else{
     Sky1(3.5*dim);
-  }*/
+  }
    //  Light switch
    if (light)
    {
@@ -3784,11 +3803,13 @@ void display()
 
    //  Draw the stick
   if(mode_project== 2){
+    if(click_bat ==1 ){
   glPushMatrix();
    glTranslatef(Ex,Ey-1.0,Ez);
    glScalef(0.7*scale,0.7*scale,0.7*scale);
    drawWand(10*Sin(zh), 50*Sin(theta+10), -10*Cos(zh));
    glPopMatrix();
+ }
 
 
 }
@@ -3813,7 +3834,7 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
   glPopMatrix();
 }
 
-/*glPushMatrix();
+glPushMatrix();
  glTranslatef(-7.0,0.0,0.5);
 clock_t iNowTime1 = clock();
 float timePassed1 = (float)(iNowTime1 - g_iLastRenderTime1)/CLOCKS_PER_SEC;
@@ -3833,7 +3854,6 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
   g_ParticleSystem4.Render();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
-*/
 
 
    //  Draw scene
@@ -3847,7 +3867,7 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
    drawBridge();
    glPopMatrix();*/
 
- /*glPushMatrix();
+ glPushMatrix();
  glScalef(0.8,0.8,0.8);
  glTranslatef(40.0,0.0,-5.0);
  drawCourt();
@@ -4026,14 +4046,63 @@ glPushMatrix();
    drawGround();
    glPopMatrix();
 
-   glPushMatrix();
-   cube1(10,1,10,0.1,0.1,0.1,1);
-   glPopMatrix();*/
-
    
 
+    //glPushMatrix();
+    //glTranslatef(30,1.0,-5.0);
+   glColor3f(1,1,1);
+    RenderScene();
+    //glPopMatrix();
 
-RenderScene();
+    objID = RetrieveObjectID(mouseX, mouseY);
+    switch(objID){
+      case Broom: 
+        click_broom =0 ;
+      //select the broomstick begin to fly
+        Ex = 2.3;
+        Ey = 3.0;
+        Ez = -5.4;
+        zh = 185;
+        theta = -3;
+      break;
+
+
+      case Ball: 
+      //select the ball, ball begin to fly
+        click_ball =0;
+    
+      break;
+
+      case Bat:
+      //select the bat, begin to hit the ball
+        click_bat =0;
+      break;
+      default:
+      break;
+
+    }
+
+    if(click_ball ==0){
+      float Position_ball[]  = {5*Cos(zh_l)+2.0,4.0,5*Sin(zh_l),1.0};
+      
+      glPushMatrix();
+
+      glTranslatef(30,4.0,-5.0);
+      ball(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
+      glPopMatrix();
+    }
+
+    if(click_bat ==0){
+      //float Position_ball[]  = {5*Cos(zh_l)+2.0,4.0,5*Sin(zh_l),1.0};
+      
+      glPushMatrix();
+      //glRotatef(90,0,0,1);
+      glTranslatef(30.5,8.0,-12);
+
+      drawBat();
+      glPopMatrix();
+    }
+
    
    
    //  Draw axes - no lighting from here on
@@ -4072,9 +4141,9 @@ RenderScene();
    if (light)
    {
       glWindowPos2i(5,45);
-      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
+      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",zh,Ex);
       glWindowPos2i(5,25);
-      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shiny);
+      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.1f",ambient,diffuse,specular,emission,Ez);
    }
 
    //  Render the scene and make it visible
@@ -4089,6 +4158,8 @@ RenderScene();
  */
 void idle()
 {
+
+ 
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    zh_l= fmod(90*t,360.0);
@@ -4300,8 +4371,8 @@ void key(unsigned char ch,int x,int y)
 
 void mouseCB(int button, int state, int x, int y)
 {
-    mouseX = x;
-    mouseY = y;
+    //mouseX = x;
+    //mouseY = y;
 
     if(button == GLUT_LEFT_BUTTON)
     {
