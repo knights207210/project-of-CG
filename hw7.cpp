@@ -51,13 +51,14 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+int stick_light =0;
 clock_t start;
 double t_bat;
 int hit =1;
 int zh_bat=0;
 int click_broom = 1;
 int click_ball = 1;
-int click_bat = 0;
+int click_bat = 1;
 int objID;
 int width_win = 400;
 int height_win = 400;
@@ -3764,6 +3765,7 @@ void display()
         float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
         //  Light position
         float Position[]  = {distance*Cos(zh_l)-7.0,ylight,distance*Sin(zh_l),1.0};
+        float Position_stick[]  = {Ex+0.5*Sin(zh),Ey-1.0+0.5*Sin(theta+10),Ez-0.5*Cos(zh),1.0};
        
         //float Position_fire[] = {2*Cos(zh_l)-7.0,ylight,2*Sin(zh_l),1.0};
         //  Draw light position as ball (still no lighting here)
@@ -3771,6 +3773,7 @@ void display()
         ball(Position[0],Position[1],Position[2] , 0.1);
         float Position_fire[] = {-6.9,-0.5,1.0,1.0};
    ball(Position_fire[0],Position_fire[1],Position_fire[2] , 0.01);   
+   ball(Position_stick[0],Position_stick[1],Position_stick[2] , 0.01);
 
           //  OpenGL should normalize normal vectors
         glEnable(GL_NORMALIZE);
@@ -3796,6 +3799,14 @@ void display()
         glLightfv(GL_LIGHT1,GL_SPECULAR,Specular);
         glLightfv(GL_LIGHT1,GL_POSITION,Position);
       }
+
+      if(stick_light){
+        glEnable(GL_LIGHT2);
+        glLightfv(GL_LIGHT1,GL_AMBIENT ,Ambient);
+        glLightfv(GL_LIGHT1,GL_DIFFUSE ,Diffuse);
+        glLightfv(GL_LIGHT1,GL_SPECULAR,Specular);
+        glLightfv(GL_LIGHT1,GL_POSITION,Position_stick);
+      }
    }
    else
      glDisable(GL_LIGHTING);
@@ -3807,13 +3818,13 @@ void display()
 
    //  Draw the stick
   if(mode_project== 2){
-    if(click_bat ==1 ){
+   // if(click_bat ==1 ){
   glPushMatrix();
    glTranslatef(Ex,Ey-1.0,Ez);
    glScalef(0.7*scale,0.7*scale,0.7*scale);
    drawWand(10*Sin(zh), 50*Sin(theta+10), -10*Cos(zh));
    glPopMatrix();
- }
+ //}//
 
 
 }
@@ -4157,9 +4168,9 @@ glPushMatrix();
    if (light)
    {
       glWindowPos2i(5,45);
-      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,Ex);
+      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
       glWindowPos2i(5,25);
-      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.1f",ambient,diffuse,specular,emission,Ez);
+      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.1f",ambient,diffuse,specular,emission,shiny);
    }
 
    //  Render the scene and make it visible
@@ -4383,8 +4394,22 @@ void key(unsigned char ch,int x,int y)
   }
   else if(ch == 'c' || ch == 'C')
     move_light = 1- move_light;
+  else if(ch == 'i' || ch == 'I')
+    stick_light = 1- stick_light;
+
+  else if(ch == 't' || ch == 'T'){
+    Ex = 0.7;
+    Ez =-3.7;
+    Ey =0.0;
+    zh = 120;
+    click_broom = 1;
+    click_bat = 1;
+    click_ball = 1;
+    
   
       //  Translate shininess power to value (-1 => 0)
+  }
+
    shiny = shininess<0 ? 0 : pow(2.0,shininess);
    //  Tell GLUT it is necessary to redisplay the scene
    zh %=360;
