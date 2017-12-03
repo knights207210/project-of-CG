@@ -51,6 +51,9 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+clock_t start;
+double t_bat;
+int hit =1;
 int zh_bat=0;
 int click_broom = 1;
 int click_ball = 1;
@@ -4060,10 +4063,10 @@ glPushMatrix();
       case Broom: 
         click_broom =0 ;
       //select the broomstick begin to fly
-        Ex = 2.3;
+        Ex = 0.4;
         Ey = 3.0;
-        Ez = -5.4;
-        zh = 185;
+        Ez = -2.7;
+        zh = 155;
         theta = -3;
       break;
 
@@ -4084,6 +4087,7 @@ glPushMatrix();
     }
 
     if(click_ball ==0){
+      if(hit == 1){
       float Position_ball[]  = {5*Cos(zh_l)+2.0,4.0,5*Sin(zh_l),1.0};
       
       glPushMatrix();
@@ -4092,13 +4096,24 @@ glPushMatrix();
       ball(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
       glPopMatrix();
     }
+      else{
+        //start = clock();
+        float Position_ball[]  = {8*t_bat*2*Cos(zh_bat)/(8*Sin(zh_bat)*Cos(zh)+3.0)-3.0,8*t_bat*2*Cos(zh_bat)/(8*Sin(zh_bat)*Sin(zh)-4.0)+4.0,t_bat*2};
+      
+      glPushMatrix();
+
+      glTranslatef(30,4.0,-5.0);
+      ball(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
+      glPopMatrix();
+      }
+    }
 
     if(click_bat ==0){
-      //float Position_ball[]  = {5*Cos(zh_l)+2.0,4.0,5*Sin(zh_l),1.0};
+      //float Position_ball[]  = {5*Cos(zh_l)+2.0,4.0,5*Sin(zh_l)b,1.0};
       
       glPushMatrix();
       //glRotatef(90,0,0,1);
-      glTranslatef(30.5,8.0,-12);
+      glTranslatef(26.6,8.0,-5.3);
       glRotatef(zh_bat,0,0,1);
       drawBat();
       glPopMatrix();
@@ -4142,7 +4157,7 @@ glPushMatrix();
    if (light)
    {
       glWindowPos2i(5,45);
-      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",zh,Ex);
+      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,Ex);
       glWindowPos2i(5,25);
       Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.1f",ambient,diffuse,specular,emission,Ez);
    }
@@ -4160,7 +4175,8 @@ glPushMatrix();
 void idle()
 {
 
- 
+   clock_t end = clock();
+   t_bat = (end - start )/1000000.0;
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    zh_l= fmod(90*t,360.0);
@@ -4235,6 +4251,10 @@ void special(int key,int x,int y)
 
   else if(key == GLUT_KEY_F8 && mode_project==2)
     zh_bat -= 5;
+  else if(key == GLUT_KEY_F4 && mode_project==2){
+    hit = 1-hit;
+    start = clock();
+  }
 
 
    //  Keep angles to +/-360 degrees
