@@ -330,7 +330,9 @@ void drawBat(){
     //gluSphere(pObj, 0.2f, 20, 20);          // Draw the sphere with a radius of 0.2 so it's smaller than the sun
     if(click_ball){
       glTranslatef(33,1.0,-5.0);
-    ball(1,0,0,0.2);
+      //glColor3f(0.543,0.270,0.074);
+    ball_brown(1,0,0,0.2);
+    //glColor3f(1,1,1);
   
   }
     
@@ -4104,7 +4106,9 @@ glPushMatrix();
       glPushMatrix();
 
       glTranslatef(30,4.0,-5.0);
-      ball(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
+      //glColor3f(0.543,0.270,0.074);
+      ball_brown(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
+      //glColor3f(1,1,1);
       glPopMatrix();
     }
       else{
@@ -4114,7 +4118,9 @@ glPushMatrix();
       glPushMatrix();
 
       glTranslatef(30,4.0,-5.0);
-      ball(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
+      //glColor3f(0.543,0.270,0.074);
+      ball_brown(Position_ball[0],Position_ball[1],Position_ball[2],0.2);
+      //glColor3f(1,1,1);
       glPopMatrix();
       }
     }

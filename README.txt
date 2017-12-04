@@ -11,12 +11,15 @@ This openGL program is for CSCI5229’s course project. It has two modes: the pr
 2. users could start fireworks using the wand(press ‘f’/‘F’ in first person mode);
 3. users could go inside the room where basic scene and fire simulation is finished( press ‘q’/‘Q’ in first person mode or change the view anger in projection mode; when observe the fire simulation, users could press ‘c’ or ‘C’ to switch off the other light source);
 4. users could change between a night and day mode;
+5. 3D selection will happen when in the place to hit the ball(press ’t’/’T’ in first person mode). Users could click left mouse to select 3D objects: the flying broomstick—-help users to fly up; the ball—-the ball will fly around waiting to be hit; the bat—users could use the bat to hit the ball(when using the bat, press ‘F7’/‘F8’ to change the hitting angle, press ‘F4’ to hit).
+6. light could move together with the first person view(press ‘i’/‘I’ in the first person mode to toggle the light).
 
-What will users be able to do by the final:
-1. all of the things listed above;
-2. 3D selection will happen;
-3. users could hit a ball in the court.
-4. light will be moved together with first person view
+What will make my project worthy of an A:
+1. water wave simulation;
+2. particle engines and light modeling of fire
+3. 3D selection
+4. ball’s moving trace calculation when hitting the ball
+5. drawing the scene and light modeling of the scene.
 ---------------------------------------------------------------------------
 The code is programed under OS X.
 ---------------------------------------------------------------------------
@@ -38,6 +41,8 @@ Running the Program
  *  F1         Toggle smooth/flat shading
  *  F2         Toggle local viewer mode
  *  F3         Toggle light distance (1/5)
+ *  F4         hit the ball
+ *  F7/F8      Change the angle of the bat when hitting the ball.
  *  F9/F10     Change the position of eye up and down in first person mode.
  *  m          Toggles light movement
  *  []         Lower/rise light
@@ -51,14 +56,19 @@ Running the Program
  *  f/F        When in the first person mode, use the wand to start the firework
  *  w/W        When in the first person mode, go to the place where the water
                simulation is
+ *  t/T        When in the first person mode, go to the place where we can hit the
+               ball
  *  q/Q        When in the first person mode, go to the place where has the fire
                simulation and indoor scene
+ *  i/I        Toggle the light which moves together with stick
  *  k/K        Change between the day/night mode
  *  x          Toggle axes
  *  arrows     Change view angle(<-/->: rotate around Y axis; up/down: rotate around
                X axis) when in mode 1 Change the position and view angle(<-/->, make 
                the first person navigation look left and right; up and down, make the
                first person navigation move forward and backward)
+ * LEFT MOUSE  When in the place to hit the ball, click left mouse to select 3D
+               objects: the flying broomstick,the ball or the bat.
  *  r          Reset view angle
  *  ESC        Exit 
 
