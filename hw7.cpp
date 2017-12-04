@@ -178,6 +178,42 @@ static void ball(double x,double y,double z,double r)
    glPopMatrix();
 }
 
+/*
+ *  Draw a ball
+ *     at (x,y,z)
+ *     radius (r)
+ */
+static void ball_brown(double x,double y,double z,double r)
+{
+  float white[] = {1,1,1,1};
+   float Emission[]  = {0.01*emission,0.0,0.0,1.0};
+   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+   int th,ph;
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glScaled(r,r,r);
+   //  White ball
+  // glColor3f(1,1,1);
+   glColor3f(0.543,0.270,0.074);
+   //  Bands of latitude
+   for (ph=-90;ph<90;ph+=inc)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0;th<=360;th+=2*inc)
+      {
+         Vertex(th,ph);
+         Vertex(th,ph+inc);
+      }
+      glEnd();
+   }
+   glColor3f(1,1,1);
+   //  Undo transofrmations
+   glPopMatrix();
+}
 static void cube1(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th)
@@ -3804,11 +3840,13 @@ void display()
 
       if(stick_light){
         glEnable(GL_LIGHT2);
-        glLightfv(GL_LIGHT1,GL_AMBIENT ,Ambient);
-        glLightfv(GL_LIGHT1,GL_DIFFUSE ,Diffuse);
-        glLightfv(GL_LIGHT1,GL_SPECULAR,Specular);
-        glLightfv(GL_LIGHT1,GL_POSITION,Position_stick);
+        glLightfv(GL_LIGHT2,GL_AMBIENT ,Ambient);
+        glLightfv(GL_LIGHT2,GL_DIFFUSE ,Diffuse);
+        glLightfv(GL_LIGHT2,GL_SPECULAR,Specular);
+        glLightfv(GL_LIGHT2,GL_POSITION,Position_stick);
       }
+      else
+        glDisable(GL_LIGHT2);
    }
    else
      glDisable(GL_LIGHTING);
@@ -4079,7 +4117,7 @@ glPushMatrix();
         Ex = 0.4;
         Ey = 3.0;
         Ez = -2.7;
-        zh = 155;
+        zh = 150;
         theta = -3;
       break;
 
@@ -4322,6 +4360,7 @@ void key(unsigned char ch,int x,int y)
       Ez = -5;
       theta = 5;
       zh = -90;
+      stick_light = firework;
     }
 
    //  Move light
@@ -4396,6 +4435,7 @@ void key(unsigned char ch,int x,int y)
       Ez = 13.7;
       zh = 190;
       Ey = -0.1;
+      theta = 0;
       firework = 0;
   }
   else if(ch == 'c' || ch == 'C')
@@ -4407,6 +4447,7 @@ void key(unsigned char ch,int x,int y)
     Ex = 0.7;
     Ez =-3.7;
     Ey =0.0;
+    theta = 0;
     zh = 120;
     click_broom = 1;
     click_bat = 1;
