@@ -51,6 +51,7 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+int bird =1;
 int stick_light =0;
 clock_t start;
 double t_bat;
@@ -59,6 +60,7 @@ int zh_bat=0;
 int click_broom = 1;
 int click_ball = 1;
 int click_bat = 1;
+int click_snitch = 1;
 int objID;
 int width_win = 400;
 int height_win = 400;
@@ -128,6 +130,7 @@ unsigned int texture[13];  //texture names
 #define Broom       100               // This is the object ID for the SUN  
 #define Ball     101               // This is the object ID for the EARTH
 #define Bat     102 
+#define Snitch 103
 
 
 /*
@@ -283,7 +286,12 @@ static void cube1(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
  }
 
-
+void drawStairs(){
+  float xx;
+  float yy;
+for(xx=0,yy=0.2;xx<10;xx+=0.3,yy+=0.2)   
+      cube1(xx,yy,-12.321,0.6,0.15,1.2,0);
+}
 
 void drawBroom(){
   float RGBA[] = {1,1,1,1};
@@ -305,6 +313,15 @@ void drawBat(){
   glCallList(obj);
 }
 
+void drawSnitch(){
+  float RGBA[] = {1,1,1,1};
+  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  glMaterialf(GL_FRONT,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+  obj = LoadOBJ("snitch.obj");
+  glCallList(obj);
+}
  void RenderScene() 
 {
   //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear The Screen And The Depth Buffer
@@ -410,6 +427,24 @@ void drawBat(){
   //glutSwapBuffers();                 // Swap the backbuffers to the foreground
 
   //gluDeleteQuadric(pObj);               // Free the Quadric
+
+glPushName(Snitch);                  // Push on our broom label 
+  
+  glPushMatrix();                   // Push on a new matrix scope
+    //glTranslatef(0, 0, 0);              // Translate this sphere to the left
+    glTranslatef(32,1.0,-4.0);
+    //gluSphere(pObj, 0.5f, 20, 20);          // Draw the sunwith a radius of 0.5
+    if(click_snitch){
+      glScalef(0.01,0.01,0.01);
+    drawSnitch();
+  }
+   // ball(0,0,0,0.1);
+  glPopMatrix();                    // End the current scope of this matrix
+
+  // Now that we drew the sun, we want to end our Object name.  We call glPopName()
+  // to do that.  Now nothing else will be associated with the SUN ID.
+
+  glPopName();                    // Stop assigning polygons to the SUN label (IMPORTANT)
 
 }
 
@@ -1527,6 +1562,15 @@ void UpdateScene(bool bEndIsFree, float deltaTime, float time)
   }
 
 }
+void drawBird(){
+  float RGBA[] = {1,1,1,1};
+  float Emission[]  = {0.0,0.0,0.01*40,1.0};
+  glMaterialf(GL_FRONT,GL_SHININESS,shiny);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+  obj = LoadOBJ("Bird.obj");
+  glCallList(obj);
+}
 //draw the scene with pool
 void DrawScene(void)
 {
@@ -1539,6 +1583,7 @@ void DrawScene(void)
             NumIndices,  //count, ie. how many indices
             GL_UNSIGNED_INT, //type of the index array
             Indices);;
+  //drawBird();
 
 }
 
@@ -3328,17 +3373,65 @@ void drawGate(){
    glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,1.0);
    glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,2.0);
-   glTexCoord2f(3.5/4,0);glVertex3f(3.5,0.0,2.0);
-   glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,2.0);
+   glTexCoord2f(5.5/4,0);glVertex3f(5.5,0.0,2.0);
+   glTexCoord2f(5.5/4,HigherHeight*1.2/4);glVertex3f(5.5,HigherHeight*1.2,2.0);
    glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,2.0);
    glEnd();
 
    glBegin(GL_QUADS);
    glNormal3f(0.0,0.0,-1.0);
    glTexCoord2f(6.5/4,0);glVertex3f(6.5,0.0,1.999);
+   glTexCoord2f(5.5/4,0);glVertex3f(5.5,0.0,1.999);
+   glTexCoord2f(5.5/4,HigherHeight*1.2/4);glVertex3f(5.5,HigherHeight*1.2,1.999);
+   glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,1.999);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,2.0);
+   glTexCoord2f(3.5/4,0);glVertex3f(3.5,0.0,2.0);
+   glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,2.0);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,-1.0);
+   glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,1.999);
    glTexCoord2f(3.5/4,0);glVertex3f(3.5,0.0,1.999);
    glTexCoord2f(3.5/4,HigherHeight*1.2/4);glVertex3f(3.5,HigherHeight*1.2,1.999);
-   glTexCoord2f(6.5/4,HigherHeight*1.2/4);glVertex3f(6.5,HigherHeight*1.2,1.999);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,1.999);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(5.5/4,0);glVertex3f(5.5,0.0,2.0);
+   glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,2.0);
+   glTexCoord2f(4.5/4,HigherHeight*0.4/4);glVertex3f(4.5,HigherHeight*0.4,2.0);
+   glTexCoord2f(5.5/4,HigherHeight*0.4/4);glVertex3f(5.5,HigherHeight*0.4,2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,-1.0);
+   glTexCoord2f(5.5/4,0);glVertex3f(5.5,0.0,1.999);
+   glTexCoord2f(4.5/4,0);glVertex3f(4.5,0.0,1.999);
+   glTexCoord2f(4.5/4,HigherHeight*0.4/4);glVertex3f(4.5,HigherHeight*0.4,1.999);
+   glTexCoord2f(5.5/4,HigherHeight*0.4/4);glVertex3f(5.5,HigherHeight*0.4,1.999);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,1.0);
+   glTexCoord2f(5.5/4,HigherHeight*0.6/4);glVertex3f(5.5,HigherHeight*0.6,2.0);
+   glTexCoord2f(4.5/4,HigherHeight*0.6/4);glVertex3f(4.5,HigherHeight*0.6,2.0);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,2.0);
+   glTexCoord2f(5.5/4,HigherHeight*1.2/4);glVertex3f(5.5,HigherHeight*1.2,2.0);
+   glEnd();
+
+   glBegin(GL_QUADS);
+   glNormal3f(0.0,0.0,-1.0);
+   glTexCoord2f(5.5/4,HigherHeight*0.6/4);glVertex3f(5.5,HigherHeight*0.6,1.999);
+   glTexCoord2f(4.5/4,HigherHeight*0.6/4);glVertex3f(4.5,HigherHeight*0.6,1.999);
+   glTexCoord2f(4.5/4,HigherHeight*1.2/4);glVertex3f(4.5,HigherHeight*1.2,1.999);
+   glTexCoord2f(5.5/4,HigherHeight*1.2/4);glVertex3f(5.5,HigherHeight*1.2,1.999);
    glEnd();
 
    glPopMatrix();
@@ -3804,7 +3897,7 @@ void display()
         //  Light position
         float Position[]  = {distance*Cos(zh_l)-7.0,ylight,distance*Sin(zh_l),1.0};
         float Position_stick[]  = {Ex+0.5*Sin(zh),Ey-1.0+0.5*Sin(theta+10),Ez-0.5*Cos(zh),1.0};
-       
+        float Position_bird[]  = {2*0.2*(0.5*Cos(zh_l)+4.0),2*0.2*(4.0-4.22), 2*0.2*(37.0+0.5*Sin(zh_l)),1,0};
         //float Position_fire[] = {2*Cos(zh_l)-7.0,ylight,2*Sin(zh_l),1.0};
         //  Draw light position as ball (still no lighting here)
         glColor3f(1,1,1);
@@ -3812,6 +3905,7 @@ void display()
         float Position_fire[] = {-6.9,-0.5,1.0,1.0};
    ball(Position_fire[0],Position_fire[1],Position_fire[2] , 0.01);   
    ball(Position_stick[0],Position_stick[1],Position_stick[2] , 0.01);
+   ball(Position_bird[0],Position_bird[1],Position_bird[2],0.0001);
 
           //  OpenGL should normalize normal vectors
         glEnable(GL_NORMALIZE);
@@ -3847,6 +3941,16 @@ void display()
       }
       else
         glDisable(GL_LIGHT2);
+
+      if(bird){
+        glEnable(GL_LIGHT3);
+        glLightfv(GL_LIGHT3,GL_AMBIENT ,Ambient);
+        glLightfv(GL_LIGHT3,GL_DIFFUSE ,Diffuse);
+        glLightfv(GL_LIGHT3,GL_SPECULAR,Specular);
+        glLightfv(GL_LIGHT3,GL_POSITION,Position_bird);
+      }
+      else
+        glDisable(GL_LIGHT3);
    }
    else
      glDisable(GL_LIGHTING);
@@ -3922,6 +4026,13 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
    drawBridge();
    glPopMatrix();*/
 
+glPushMatrix();
+ glScalef(0.8,0.8,0.8);
+ glTranslatef(2.0,0.0,1.0);
+ glRotatef(-90,0,1,0);
+ drawStairs();
+ glPopMatrix();
+ 
  glPushMatrix();
  glScalef(0.8,0.8,0.8);
  glTranslatef(40.0,0.0,-5.0);
@@ -3954,6 +4065,20 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
  glScalef(0.8,0.8,0.8);
  DrawScene();
  glPopMatrix();
+
+
+      if(bird){
+        float Position_bird[]  = {Cos(zh_l)+2.0,4.0, Sin(zh_l),1,0};
+      glPushMatrix();
+      //glRotatef(180,0,1,0);
+      glTranslatef(27+Position_bird[0],Position_bird[1]-3.0,37+Position_bird[2]);
+      glScalef(0.5,0.5,0.5);
+      drawBird();
+      glPopMatrix();
+    }
+
+ 
+
 
  glPushMatrix();
  glTranslatef(-1.0,0.0,0.0);
@@ -4132,8 +4257,12 @@ glPushMatrix();
       //select the bat, begin to hit the ball
         click_bat =0;
       break;
+
+      case Snitch:
+        click_snitch =0;
       default:
       break;
+
 
     }
 
@@ -4171,6 +4300,17 @@ glPushMatrix();
       glTranslatef(26.6,8.0,-5.3);
       glRotatef(zh_bat,0,0,1);
       drawBat();
+      glPopMatrix();
+    }
+
+    if(click_snitch ==0){
+      float Position_ball[]  = {10*Cos(zh_l)+2.0,4.0,10*Sin(zh_l),1.0};
+      
+      glPushMatrix();
+      //glRotatef(90,0,0,1);
+      glTranslatef(30+Position_ball[0],4.0+Position_ball[1],-5.0+Position_ball[2]);
+      glScalef(0.01,0.01,0.01);
+      drawSnitch();
       glPopMatrix();
     }
 
@@ -4452,10 +4592,12 @@ void key(unsigned char ch,int x,int y)
     click_broom = 1;
     click_bat = 1;
     click_ball = 1;
-    
+  
   
       //  Translate shininess power to value (-1 => 0)
   }
+  else if (ch=='j' || ch=='J')
+      bird = 1-bird;
 
    shiny = shininess<0 ? 0 : pow(2.0,shininess);
    //  Tell GLUT it is necessary to redisplay the scene

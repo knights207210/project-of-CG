@@ -62,6 +62,7 @@ Running the Program
                simulation and indoor scene
  *  i/I        Toggle the light which moves together with stick
  *  k/K        Change between the day/night mode
+ *  j/J        Toggle the patronum
  *  x          Toggle axes
  *  arrows     Change view angle(<-/->: rotate around Y axis; up/down: rotate around
                X axis) when in mode 1 Change the position and view angle(<-/->, make 
