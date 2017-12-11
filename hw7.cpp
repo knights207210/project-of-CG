@@ -51,6 +51,7 @@
 #define BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL    2  
 #define RANDOM_FLOAT (((float)rand())/RAND_MAX)
 
+float teapot_size =2.0;
 int bird =1;
 int stick_light =0;
 clock_t start;
@@ -61,6 +62,7 @@ int click_broom = 1;
 int click_ball = 1;
 int click_bat = 1;
 int click_snitch = 1;
+int click_teapot = 1;
 int objID;
 int width_win = 400;
 int height_win = 400;
@@ -127,10 +129,11 @@ int obj;
 
 unsigned int texture[13];  //texture names
 
-#define Broom       100               // This is the object ID for the SUN  
-#define Ball     101               // This is the object ID for the EARTH
+#define Broom       100               
+#define Ball     101               
 #define Bat     102 
 #define Snitch 103
+#define Teapot 104
 
 
 /*
@@ -154,7 +157,7 @@ static void Vertex(double th,double ph)
 static void ball(double x,double y,double z,double r)
 {
   float white[] = {1,1,1,1};
-   float Emission[]  = {0.01*emission,0.0,0.0,1.0};
+   float Emission[]  = {float(0.01*emission),0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -182,14 +185,14 @@ static void ball(double x,double y,double z,double r)
 }
 
 /*
- *  Draw a ball
+ *  Draw a brown ball
  *     at (x,y,z)
  *     radius (r)
  */
 static void ball_brown(double x,double y,double z,double r)
 {
   float white[] = {1,1,1,1};
-   float Emission[]  = {0.01*emission,0.0,0.0,1.0};
+   float Emission[]  = {float(0.01*emission),0.0,0.0,1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -199,8 +202,6 @@ static void ball_brown(double x,double y,double z,double r)
    //  Offset, scale and rotate
    glTranslated(x,y,z);
    glScaled(r,r,r);
-   //  White ball
-  // glColor3f(1,1,1);
    glColor3f(0.543,0.270,0.074);
    //  Bands of latitude
    for (ph=-90;ph<90;ph+=inc)
@@ -217,12 +218,14 @@ static void ball_brown(double x,double y,double z,double r)
    //  Undo transofrmations
    glPopMatrix();
 }
+
+// draw a cube
 static void cube1(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th)
 {
    float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   float Emission[]  = {0.0,0.0,float(0.01*emission),1.0};
    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
@@ -286,6 +289,7 @@ static void cube1(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
  }
 
+// draw the stairs which connect the Lounge and the Hall
 void drawStairs(){
   float xx;
   float yy;
@@ -293,9 +297,10 @@ for(xx=0,yy=0.2;xx<10;xx+=0.3,yy+=0.2)
       cube1(xx,yy,-12.321,0.6,0.15,1.2,0);
 }
 
+// load the object of broom
 void drawBroom(){
   float RGBA[] = {1,1,1,1};
-  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  float Emission[]  = {0.0,0.0,float(0.01*emission),1.0};
   glMaterialf(GL_FRONT,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
    glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
@@ -303,9 +308,10 @@ void drawBroom(){
   glCallList(obj);
 }
 
+// load the object of bat
 void drawBat(){
   float RGBA[] = {1,1,1,1};
-  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  float Emission[]  = {0.0,0.0,float(0.01*emission),1.0};
   glMaterialf(GL_FRONT,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
    glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
@@ -313,138 +319,89 @@ void drawBat(){
   glCallList(obj);
 }
 
+//load the object of snitch
+
 void drawSnitch(){
   float RGBA[] = {1,1,1,1};
-  float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+  float Emission[]  = {0.0,0.0,float(0.01*emission),1.0};
   glMaterialf(GL_FRONT,GL_SHININESS,shiny);
    glMaterialfv(GL_FRONT,GL_SPECULAR,RGBA);
    glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
-  obj = LoadOBJ("snitch.obj");
+  obj = LoadOBJ("Snitch.obj");
   glCallList(obj);
 }
+
+//3D selection scene
  void RenderScene() 
 {
-  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear The Screen And The Depth Buffer
-  //glLoadIdentity();                 // Reset The matrix
-
-  // We make our position a bit high and back to view the whole scene
-
-    //    Position      View     Up Vector
-  //gluLookAt(Ex, Ey, Ez,     0, 0, 0,     0, 1, 0);   // This determines where the camera's position and view is
+  
 
   glInitNames();                    // This clears the name stack so we always start with 0 names.
 
-  //GLUquadricObj *pObj = gluNewQuadric();        // Get a new Quadric off the stack
-
-  //gluQuadricTexture(pObj, true);            // This turns on texture coordinates for our Quadrics
-
-  // Bind the sun texture to the sun quadratic
-  //glBindTexture(GL_TEXTURE_2D, texture[0]);     // Bind the Sun texture to the sun
-
-  // Below we call glPushName().  We need to pass in an ID that we can check later that will
-  // be associated with the polygons drawn next.  Here is how it works.  We call glPushName()
-  // and pass an ID.  This pushes this ID onto the name stack.  Then we draw any primitives 
-  // or shapes, then we call glPopName() which stops assigning polys to that object name.  
-  // We now have a group of polygons that are given an ID.  Our ID SUN now refers to the 
-  // sun Quadric we draw below.
-
  glPushName(Broom);                  // Push on our broom label 
   
-  glPushMatrix();                   // Push on a new matrix scope
-    //glTranslatef(0, 0, 0);              // Translate this sphere to the left
-    glTranslatef(30,1.0,-5.0);
-    //gluSphere(pObj, 0.5f, 20, 20);          // Draw the sunwith a radius of 0.5
+  glPushMatrix();                  
+  glTranslatef(25,1.0,-5.0);
     if(click_broom)
     drawBroom();
-   // ball(0,0,0,0.1);
-  glPopMatrix();                    // End the current scope of this matrix
+  glPopMatrix();                   
 
-  // Now that we drew the sun, we want to end our Object name.  We call glPopName()
-  // to do that.  Now nothing else will be associated with the SUN ID.
+  glPopName();                   
+  
 
-  glPopName();                    // Stop assigning polygons to the SUN label (IMPORTANT)
+  glPushName(Ball);                 
 
-  // Next, we want to bind the Earth texture to our Earth sphere
-  //glBindTexture(GL_TEXTURE_2D, texture[1]);
-
-  // Once again, we want to create a object ID for our earth, so we push on the EARTH ID.
-  // Now, when we draw the next sphere, it will be associated with the EARTH ID.
-
-  glPushName(Ball);                  // Push on our EARTH label (IMPORTANT)
-
-  // Once again, we want to pop on a new matrix as not to affect any other spheres.
-  // We rotate the sphere by its current rotation value FIRST before we translate it.
-  // This makes it rotate around the origin, which is where the sun is.
-  // Then we rotate it again about the Y-axis to make it spin around itself.
-
-  glPushMatrix();                   // Push on a new matrix scope   
-    //glTranslatef(-0.2, 0, 0);             // Translate this sphere to the left
-    
-    //gluSphere(pObj, 0.2f, 20, 20);          // Draw the sphere with a radius of 0.2 so it's smaller than the sun
+  glPushMatrix();                  
     if(click_ball){
       glTranslatef(33,1.0,-5.0);
-      //glColor3f(0.543,0.270,0.074);
     ball_brown(1,0,0,0.2);
-    //glColor3f(1,1,1);
   
   }
     
-  glPopMatrix();                    // End the current scope of this matrix
+  glPopMatrix();                    
 
-  // We are done assigning the EARTH object, so we need 
-  // to stop assigning polygons to the current ID.
+  glPopName();                    
 
-  glPopName();                    // Stop assigning polygons to the EARTH label (IMPORTANT)
+  glPushName(Bat);                  
 
-  // Bind the pluto texture to the last sphere
-  //glBindTexture(GL_TEXTURE_2D, texture[2]);
-
-  // Finally, we want to be able to click on Pluto, so we need a pluto ID.
-
-  glPushName(Bat);                  // Push on our PLUTO label (IMPORTANT)
-
-  // Like we did with the earth, we rotate Pluto around the sun first,
-  // then we translate it farther away from the sun.  Next, we rotate Pluto
-  // around the Y axis to give it some spin.
-
-  // Pass in our empty glBegin()/glEnd() statement because we are using Quadrics.
-  // If we don't do this when using glLoadName(), it will grind to a hault on some cards.
-  //glBegin(GL_LINES);
-  //glEnd();
-
-  glPushMatrix();                   // Push on a new matrix scope
-    glTranslatef(25,1.0,-5.0);
-    //gluSphere(pObj, 0.3f, 20, 20);          // Draw the sphere with a radius of 0.1 (smallest planet)
-    //ball(2,0,0,0.1);
+  glPushMatrix();                   
+  glTranslatef(30,1.0,-5.0);
     if(click_bat)
     drawBat();
-  glPopMatrix();                    // End the current scope of this matrix
+  glPopMatrix();
 
-  // We are finished with the PLUTO object ID, so we need to pop it off the name stack.
+  glPopName();                    
 
-  glPopName();                    // Stop assigning polygons to our PLUTO label (IMPORTANT)
-
-  //glutSwapBuffers();                 // Swap the backbuffers to the foreground
-
-  //gluDeleteQuadric(pObj);               // Free the Quadric
-
-glPushName(Snitch);                  // Push on our broom label 
+glPushName(Snitch);                  
   
-  glPushMatrix();                   // Push on a new matrix scope
-    //glTranslatef(0, 0, 0);              // Translate this sphere to the left
-    glTranslatef(32,1.0,-4.0);
-    //gluSphere(pObj, 0.5f, 20, 20);          // Draw the sunwith a radius of 0.5
+  glPushMatrix();                   
+    glTranslatef(32,1.0,-8.0);
+   
     if(click_snitch){
       glScalef(0.01,0.01,0.01);
     drawSnitch();
   }
-   // ball(0,0,0,0.1);
-  glPopMatrix();                    // End the current scope of this matrix
+   
+  glPopMatrix();                   
 
-  // Now that we drew the sun, we want to end our Object name.  We call glPopName()
-  // to do that.  Now nothing else will be associated with the SUN ID.
+  glPopName(); 
 
-  glPopName();                    // Stop assigning polygons to the SUN label (IMPORTANT)
+  glPushName(Teapot);                  
+  
+  if(click_teapot){
+  glPushMatrix();                   
+    glTranslatef(7,0.55,0.1);
+   glScalef(2.0,2.0,2.0);
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   glBindTexture(GL_TEXTURE_2D,texture[12]);
+   glutSolidTeapot(0.05);
+   glDisable(GL_TEXTURE_2D);
+   
+  glPopMatrix();
+  }                   
+
+  glPopName();                     
 
 }
 
@@ -456,126 +413,36 @@ glPushName(Snitch);                  // Push on our broom label
 int RetrieveObjectID(int x, int y)
 {
   int objectsFound = 0;               // This will hold the amount of objects clicked
-  int viewportCoords[4] = {0};            // We need an array to hold our view port coordinates
+  int viewportCoords[4] = {0};          
 
-  // This will hold the ID's of the objects we click on.
-  // We make it an arbitrary number of 32 because openGL also stores other information
-  // that we don't care about.  There is about 4 slots of info for every object ID taken up.
   unsigned int selectBuffer[32] = {0};        
-                            
-  // glSelectBuffer is what we register our selection buffer with.  The first parameter
-  // is the size of our array.  The next parameter is the buffer to store the information found.
-  // More information on the information that will be stored in selectBuffer is further below.
-
-  glSelectBuffer(32, selectBuffer);         // Setup our selection buffer to accept object ID's
-
-  // This function returns information about many things in OpenGL.  We pass in GL_VIEWPORT
-  // to get the view port coordinates.  It saves it like a RECT with {top, left, bottom, right}
-
+  glSelectBuffer(32, selectBuffer);         // Setup selection buffer to accept object ID's
   glGetIntegerv(GL_VIEWPORT, viewportCoords);     // Get the current view port coordinates
-
-  // Now we want to get out of our GL_MODELVIEW matrix and start effecting our
-  // GL_PROJECTION matrix.  This allows us to check our X and Y coords against 3D space.
-
-  glMatrixMode(GL_PROJECTION);            // We want to now effect our projection matrix
+  glMatrixMode(GL_PROJECTION);            // effect projection matrix
   
-  glPushMatrix();                   // We push on a new matrix so we don't effect our 3D projection
-
-    // This makes it so it doesn't change the frame buffer if we render into it, instead, 
-    // a record of the names of primitives that would have been drawn if the render mode was
-    // GL_RENDER are now stored in the selection array (selectBuffer).
-
-    glRenderMode(GL_SELECT);            // Allows us to render the objects, but not change the frame buffer
-
-    glLoadIdentity();               // Reset our projection matrix
-
-    // gluPickMatrix allows us to create a projection matrix that is around our
-    // cursor.  This basically only allows rendering in the region that we specify.
-    // If an object is rendered into that region, then it saves that objects ID for us (The magic).
-    // The first 2 parameters are the X and Y position to start from, then the next 2
-    // are the width and height of the region from the starting point.  The last parameter is
-    // of course our view port coordinates.  You will notice we subtract "y" from the
-    // BOTTOM view port coordinate.  We do this to flip the Y coordinates around.  The 0 y
-    // coordinate starts from the bottom, which is opposite to window's coordinates.
-    // We also give a 2 by 2 region to look for an object in.  This can be changed to preference.
-
+  glPushMatrix();                   
+   glRenderMode(GL_SELECT);           
+    glLoadIdentity();               // Reset projection matrix
     gluPickMatrix(x, viewportCoords[3] - y, 20, 20, viewportCoords);
+    gluPerspective(45.0f,(float)width_win/(float)height_win,0.1f,150.0f);   
+    glMatrixMode(GL_MODELVIEW);           // Go back into model view matrix  
+    RenderScene();               
+    objectsFound = glRenderMode(GL_RENDER);     
+    glMatrixMode(GL_PROJECTION);         
+  glPopMatrix();                   
 
-    // Next, we just call our normal gluPerspective() function, exactly as we did on startup.
-    // This is to multiply the perspective matrix by the pick matrix we created up above. 
-
-    gluPerspective(45.0f,(float)width_win/(float)height_win,0.1f,150.0f);
-    
-    glMatrixMode(GL_MODELVIEW);           // Go back into our model view matrix
-  
-    RenderScene();                  // Now we render into our selective mode to pinpoint clicked objects
-    // If we return to our normal render mode from select mode, glRenderMode returns
-    // the number of objects that were found in our specified region (specified in gluPickMatrix())
-
-    objectsFound = glRenderMode(GL_RENDER);     // Return to render mode and get the number of objects found
-
-    glMatrixMode(GL_PROJECTION);          // Put our projection matrix back to normal.
-  glPopMatrix();                    // Stop effecting our projection matrix
-
-  glMatrixMode(GL_MODELVIEW);             // Go back to our normal model view matrix
-
-  // PHEW!  That was some stuff confusing stuff.  Now we are out of the clear and should have
-  // an ID of the object we clicked on.  objectsFound should be at least 1 if we found an object.
+  glMatrixMode(GL_MODELVIEW);             
 
   if (objectsFound > 0)
   {   
-    // If we found more than one object, we need to check the depth values
-    // of all the objects found.  The object with the LEAST depth value is
-    // the closest object that we clicked on.  Depending on what you are doing,
-    // you might want ALL the objects that you clicked on (if some objects were
-    // behind the closest one), but for this tutorial we just care about the one
-    // in front.  So, how do we get the depth value?  Well, The selectionBuffer
-    // holds it.  For every object there is 4 values.  The first value is
-    // "the number of names in the name stack at the time of the event, followed 
-    // by the minimum and maximum depth values of all vertices that hit since the 
-    // previous event, then followed by the name stack contents, bottom name first." - MSDN
-    // The only ones we care about are the minimum depth value (the second value) and
-    // the object ID that was passed into glLoadName() (This is the fourth value).
-    // So, [0 - 3] is the first object's data, [4 - 7] is the second object's data, etc...
-    // Be carefull though, because if you are displaying 2D text in front, it will
-    // always find that as the lowest object.  So make sure you disable text when
-    // rendering the screen for the object test.  I use a flag for RenderScene().
-    // So, lets get the object with the lowest depth!   
-
-    // Set the lowest depth to the first object to start it off.
-    // 1 is the first object's minimum Z value.
-    // We use an unsigned int so we don't get a warning with selectBuffer below.
-    unsigned int lowestDepth = selectBuffer[1];
-
-    // Set the selected object to the first object to start it off.
-    // 3 is the first object's object ID we passed into glLoadName().
-    int selectedObject = selectBuffer[3];
-
-    // Go through all of the objects found, but start at the second one
-    for(int i = 1; i < objectsFound; i++)
-    {
-      // Check if the current objects depth is lower than the current lowest
-      // Notice we times i by 4 (4 values for each object) and add 1 for the depth.
-      if(selectBuffer[(i * 4) + 1] < lowestDepth)
-      {
-        // Set the current lowest depth
-        lowestDepth = selectBuffer[(i * 4) + 1];
-
-        // Set the current object ID
-        selectedObject = selectBuffer[(i * 4) + 3];
-      }
-    }
-    
-    // Return the selected object
+    int selectedObject = selectBuffer[3];    
     return selectedObject;
   }
-
-  // We didn't click on any objects so return 0
   return 0;                     
 }
 
 
-//waterwave simulation
+//waterwave simulation and particle engine
 //-------------------------------------------------------------------------------------------------------------------
 struct SOscillator
 {
@@ -590,12 +457,12 @@ struct SOscillator
 };
 //vertex data for the waves:
 SOscillator * Oscillators;
-int NumOscillators;  //size of the vertex array
-std::vector <GLuint> IndexVect;  //we first put the indices into this vector, then copy them to the array below
+int NumOscillators;  
+std::vector <GLuint> IndexVect;  
 GLuint * Indices;
-int NumIndices;   //size of the index array
+int NumIndices;   
 
-float g_timePassedSinceStart = 0.0f;  //note: this need not be the real time
+float g_timePassedSinceStart = 0.0f;  
 bool  g_bExcitersInUse = true;
 
 
@@ -680,172 +547,102 @@ class CCCParticleSystem;
 class CCCParticle
 {
 private:
-  //Position of the particle:  NOTE: This might be the global position or the local position (depending on the system's translating behavior)
   SF3dVector m_Position;
-  //Moving the particle:
-  //Particle's velocity:
   SF3dVector m_Velocity;
-  //Particle's acceleration (per Sec):
   SF3dVector m_Acceleration;
-  //Spinning the particle
-  float    m_fSpinAngle; //radian measure
-  //Particle's spin speed:
+  float    m_fSpinAngle; 
   float    m_fSpinSpeed;
-  //Particle's spin acceleration:
   float      m_fSpinAcceleration;
-  //Particle's alpha value (=transparency)
   float      m_fAlpha;
-  float    m_fAlphaChange;  //how much is the alpha value changed per sec?
-  //Particle's color:
-  SF3dVector m_Color;   //x=r, y=g, z=b
-  SF3dVector m_ColorChange;  //how to change to color per sec
-  //Particle's size:  (the use of this value is dependent of m_bUseTexture in the parent!)
+  float    m_fAlphaChange;  
+  SF3dVector m_Color;   
+  SF3dVector m_ColorChange;  
   float    m_fSize;
   float    m_fSizeChange; 
-  //Handling the lifetime:
-  float    m_fDieAge; //At what "age" will the particle die?
-  float    m_fAge;    //Age of the particle (is updated   
-  //Needed to access the system's values:
+  float    m_fDieAge; 
+  float    m_fAge;   
   CCCParticleSystem * m_ParentSystem;
   
 public:
-  bool     m_bIsAlive;  //Is the particle active or not? Must be visible for the System
+  bool     m_bIsAlive;  
   void Initialize(CCCParticleSystem * ParentSystem);
-  void Update(float timePassed);  //called by UpdateSystem if particle is active
+  void Update(float timePassed);  
   void Render();  
 
 };
 
-
-/*******************
-CCCParticleSystem
-*******************/
-
 class CCCParticleSystem
 {
-public:  //The values how to emit a particle must be public because the particle  
-     //must be able to access them in the creation function.
-//*************************************
-// EMISSION VALUES
-//*************************************
-
-  //Position of the emitter:
+public:  
   SF3dVector    m_EmitterPosition;
-  //How far may the particles be created from the emitter?
-  SF3dVector    m_MaxCreationDeviation;  //3 positive values. Declares the possible distance from the emitter
-                       // Distance can be between -m_MaxCreationDeviation.? and +m_MaxCreationDeviation.?
-  //Which direction are the particles emitted to?
+  SF3dVector    m_MaxCreationDeviation;  
   SF3dVector    m_StandardEmitDirection;
-  SF3dVector    m_MaxEmitDirectionDeviation; //Works like m_MaxCreationDeviation
+  SF3dVector    m_MaxEmitDirectionDeviation; 
 
-  //Which speed do they have when they are emitted?
-  //->Somewhere between these speeds:
   float     m_fMinEmitSpeed;
   float     m_fMaxEmitSpeed;
 
-  //How fast do they spin when being emitted? Speed here is angle speed (radian measure) per sec
   float     m_fMinEmitSpinSpeed;
   float     m_fMaxEmitSpinSpeed;
-  //Spinning acceleration:
+  
   float     m_fMinSpinAcceleration;
   float     m_fMaxSpinAcceleration;
 
-  //The acceleration vector always has the same direction (normally (0/-1/0) for gravity):
   SF3dVector    m_AccelerationDirection;
-  //...but not the same amount:
+
   float     m_fMinAcceleration;
   float     m_fMaxAcceleration;
-  
-  //How translucent are the particles when they are created?
+
   float     m_fMinEmitAlpha;
   float     m_fMaxEmitAlpha;
-  //How translucent are the particles when they have reached their dying age?
+
   float     m_fMinDieAlpha;
   float     m_fMaxDieAlpha;
 
-  //How big are the particles when they are created / when they die
   float     m_fMinEmitSize;
   float     m_fMaxEmitSize;
   float     m_fMinDieSize;
   float     m_fMaxDieSize;
 
-
-  //The same with the color:
   SF3dVector    m_MinEmitColor;
   SF3dVector    m_MaxEmitColor;
   SF3dVector    m_MinDieColor;
   SF3dVector    m_MaxDieColor;
 
-//*************************************
-// OTHER PARTICLE INFORMATION
-//*************************************
-
-  //How long shall the particles live? Somewhere (randomly) between:
   float     m_fMinDieAge;
   float     m_fMaxDieAge;
 
-  bool      m_bRecreateWhenDied;  //Set it true so a particle will be recreate itsself as soon
-                      //as it died
+  bool      m_bRecreateWhenDied;  
 
-//*************************************
-// RENDERING PROPERTIES
-//************************************* 
+  int       m_iBillboarding;    
+  bool      m_bUseTexture;    
 
-  int       m_iBillboarding;    //See the constants above
-  
-  //COGLTexture * m_Texture;        //Pointer to the texture (which is only an "alpha texture") 
-  bool      m_bUseTexture;    //Set it false if you want to use GL_POINTS as particles!
+  bool      m_bParticlesLeaveSystem;  
 
-  bool      m_bParticlesLeaveSystem;  //Switch it off if the particle's positions 
-                       //shall be relative to the system's position (emitter position)
-    
-//*************************************
-// STORING THE PARTICLES
-//************************************* 
-  //Particle array:
   CCCParticle    *m_pParticles;
-  //Maximum number of particles (assigned when reserving mem for the particle array)
   int       m_iMaxParticles;
-  //How many particles are currently in use?
   int       m_iParticlesInUse;
-  //How many particles are created per second?
-  //Note that this is an average value and if you set it too high, there won't be
-  //dead particles that can be created unless the lifetime is very short and/or 
-  //the array of particles (m_pParticles) is big 
-  int       m_iParticlesCreatedPerSec;  //if bRecreateWhenDied is true, this is the ADDITIONAL number of created particles!
-  float     m_fCreationVariance; //Set it 0 if the number of particles created per sec 
-                     //should be the same each second. Otherwise use a positive value:
-                     //Example: 1.0 affects that the NumParticlesCreatedPerSec varies 
-                     //between m_iParticlesCreatedPerSec/2 and 1.5*m_iParticlesCreatedPerSec
-//Do not set these values:
-  float     m_fCurrentPointSize;  //required when rendering without particles
-  //If Billboarding is set to NONE, the following vectors are (1,0,0) and (0,1,0).
-  //If it is switched on, they are modified according to the viewdir/camera position (in Render of the System)
+  int       m_iParticlesCreatedPerSec;  
+  float     m_fCreationVariance; 
+  float     m_fCurrentPointSize; 
   SF3dVector    m_BillboardedX;
   SF3dVector    m_BillboardedY;     
 
-
-//*************************************
-// FUNCTIONS TO ASSIGN THESE MANY VECTORS MORE EASILY
-//*************************************
-
-  //Set the emitter position (you can pass a vector or x,y and z)
   void      SetEmitter(float x, float y, float z, float EmitterDeviationX,float EmitterDeviationY,float EmitterDeviationZ);
   void      SetEmitter(SF3dVector pos,SF3dVector dev);
   
-  //Set the emission direction:
-  void      SetEmissionDirection(float x, float y, float z,         //direction
+  void      SetEmissionDirection(float x, float y, float z,         
                      float MaxDeviationX, float MaxDeviationY, float MaxDeviationZ);  //max deviation
   void      SetEmissionDirection(SF3dVector direction, SF3dVector Deviation);
 
-  //Spin Speed
+  
   void      SetSpinSpeed(float min, float max);
   
-  //Acceleration
+  
   void      SetAcceleration(float x, float y, float z, float Min, float Max);
   void      SetAcceleration(SF3dVector acc, float Min, float Max);
 
-  //Color (at creation and dying age):
+  
   void      SetCreationColor(float minr, float ming, float minb,
                      float maxr, float maxg, float maxb);
   void      SetCreationColor(SF3dVector min, SF3dVector max);
@@ -853,48 +650,36 @@ public:  //The values how to emit a particle must be public because the particle
   void      SetDieColor   (float minr, float ming, float minb,
                      float maxr, float maxg, float maxb);
   void      SetDieColor   (SF3dVector min, SF3dVector max);
-  //alpha:
+  
   void      SetAlphaValues (float MinEmit, float MaxEmit, float MinDie, float MaxDie);
-  //size:
+ 
   void      SetSizeValues (float EmitMin, float EmitMax, float DieMin, float DieMax);
-    
-//*************************************
-// FUNCTIONS TO INITIALIZE THE SYSTEM
-//*************************************
 
-  CCCParticleSystem();                //constructor: sets default values
+  CCCParticleSystem();               
 
-  bool      Initialize(int iNumParticles);    //reserves space for the particles
+  bool      Initialize(int iNumParticles);   
 
   bool      LoadTextureFromFile();
 
-//*************************************
-// FUNCTIONS TO UPDATE/RENDER THE SYSTEM
-//*************************************
-
-  void      UpdateSystem(float timePassed); //updates all particles alive
-  void      Render();             //renders all particles alive
+  void      UpdateSystem(float timePassed); 
+  void      Render();            
 
 };
 
 void CCCParticle::Initialize(CCCParticleSystem *ParentSystem)
 {
 
-  //Calculate the age, the particle will live:
   m_fDieAge = ParentSystem->m_fMinDieAge + 
            ((ParentSystem->m_fMaxDieAge - ParentSystem->m_fMinDieAge)*RANDOM_FLOAT);
-  if (m_fDieAge == 0.0f) return;  //make sure there is no div 0
+  if (m_fDieAge == 0.0f) return;  
   m_fAge = 0.0f;
 
-  //set the position:
   if (ParentSystem->m_bParticlesLeaveSystem)
   {
-    //start with "global" coordinates (the current coordinates of the emitter position)
     m_Position = ParentSystem->m_EmitterPosition;
   }
   else
   {
-    //In this case we assume a local coordinate system:
     m_Position = NULL_VECTOR;
   }
   //Add the deviation from the emitter position:
@@ -907,8 +692,7 @@ void CCCParticle::Initialize(CCCParticleSystem *ParentSystem)
   m_Velocity.z = ParentSystem->m_StandardEmitDirection.z + ParentSystem->m_MaxEmitDirectionDeviation.z*(RANDOM_FLOAT*2.0f-1.0f);
   m_Velocity = m_Velocity*((ParentSystem->m_fMinEmitSpeed + 
                              (ParentSystem->m_fMaxEmitSpeed - ParentSystem->m_fMinEmitSpeed)*RANDOM_FLOAT));
-  //m_Velocity = operator*(m_Velocity,(ParentSystem->m_fMinEmitSpeed + (ParentSystem->m_fMaxEmitSpeed - ParentSystem->m_fMinEmitSpeed)*RANDOM_FLOAT));
-  //set the acceleration vector:
+  
   m_Acceleration = ParentSystem->m_AccelerationDirection* 
                   (ParentSystem->m_fMinAcceleration + (ParentSystem->m_fMaxAcceleration-ParentSystem->m_fMinAcceleration)*RANDOM_FLOAT);
   //set the alpha / color values:
@@ -939,9 +723,6 @@ void CCCParticle::Initialize(CCCParticleSystem *ParentSystem)
   m_fSpinAcceleration = ParentSystem->m_fMinSpinAcceleration +
       ((ParentSystem->m_fMaxSpinAcceleration - ParentSystem->m_fMinSpinAcceleration) * RANDOM_FLOAT);
 
-
-
-  //Ok, we're done:
   m_bIsAlive = true;
   m_ParentSystem = ParentSystem;
 
@@ -957,7 +738,7 @@ void CCCParticle::Update(float timePassed)
     if (m_ParentSystem->m_bRecreateWhenDied) 
     {
       Initialize(m_ParentSystem);
-      Update(RANDOM_FLOAT * timePassed);  //see comment in UpdateSystem
+      Update(RANDOM_FLOAT * timePassed);  
     }
     else
     {
@@ -973,14 +754,12 @@ void CCCParticle::Update(float timePassed)
   m_fAlpha += m_fAlphaChange*timePassed;
   m_Color = m_Color + m_ColorChange*timePassed;
   m_Velocity = m_Velocity + m_Acceleration*timePassed;
-  //Note: exact would be: m_Position = 1/2*m_Acceleration*timePassed² + m_VelocityOLD*timePassed;
-  //But this approach is ok, I think!
   m_Position = m_Position + (m_Velocity*timePassed);
 
   m_fSpinSpeed += m_fSpinAcceleration*timePassed;
   m_fSpinAngle += m_fSpinSpeed*timePassed;
 
-  //That's all!
+
 }
 
 void CCCParticle::Render()
@@ -1001,9 +780,7 @@ void CCCParticle::Render()
     glEnd();
   }
   else
-  {
-    //render using texture: (texture was already set active by the Render method of the particle system)
-    
+  { 
     float color[4];
     color[0] = m_Color.x;
     color[1] = m_Color.y;
@@ -1016,7 +793,7 @@ void CCCParticle::Render()
     SF3dVector RotatedY = m_ParentSystem->m_BillboardedY;
 
 
-     //If spinning is switched on, rotate the particle now:
+     //spinning
     if (m_fSpinAngle > 0.0f)
     {
       RotatedX = m_ParentSystem->m_BillboardedX * cos(m_fSpinAngle) 
@@ -1026,7 +803,7 @@ void CCCParticle::Render()
     }
   
     
-    //Render a quadrangle with the size m_fSize
+    //render texture
     SF3dVector coords = m_Position - (RotatedX*(0.5f*m_fSize))
                      - (RotatedY*(0.5f*m_fSize));
     glBegin(GL_POLYGON);
@@ -1048,18 +825,9 @@ void CCCParticle::Render()
 
 }
 
-/*************************************
-
-METHODS OF CCCParticleSytem class
-
-**************************************/
-
-
 CCCParticleSystem::CCCParticleSystem()
 {
-  //Set default values:
-  
-  //motion:
+  //Set default values
   this->m_EmitterPosition = NULL_VECTOR;
   this->m_MaxCreationDeviation = NULL_VECTOR;
 
@@ -1090,7 +858,6 @@ CCCParticleSystem::CCCParticleSystem()
   this->m_MaxDieColor = NULL_VECTOR;
   this->m_MinDieColor = NULL_VECTOR;
 
-  //this->m_Texture = NULL;
   this->m_bUseTexture = false;
   this->m_iBillboarding = BILLBOARDING_NONE;
 
@@ -1107,7 +874,7 @@ CCCParticleSystem::CCCParticleSystem()
   this->m_fMaxDieAge = 1.0f;
   this->m_fMinDieAge = 1.0f;
 
-  this->m_iMaxParticles = 0;  //array is not yet created
+  this->m_iMaxParticles = 0;  
   this->m_iParticlesInUse = 0;
 
   this->m_iParticlesCreatedPerSec = 0;
@@ -1116,7 +883,7 @@ CCCParticleSystem::CCCParticleSystem()
   this->m_pParticles = NULL;
 
 }
-//*********************************************************
+
 void CCCParticleSystem::SetEmitter(float x, float y, float z, float EmitterDeviationX,float EmitterDeviationY,float EmitterDeviationZ)
 {
   SetEmitter(F3dVector(x,y,z),F3dVector(EmitterDeviationX,EmitterDeviationY,EmitterDeviationZ));
@@ -1203,7 +970,7 @@ void CCCParticleSystem::SetSizeValues (float EmitMin, float EmitMax, float DieMi
   m_fMinDieSize = DieMin;
   m_fMaxDieSize = DieMax;
 }
-//*********************************************************
+
 
 bool CCCParticleSystem::Initialize(int iNumParticles)
 {
@@ -1218,7 +985,6 @@ bool CCCParticleSystem::Initialize(int iNumParticles)
   this->m_iMaxParticles = iNumParticles;
   this->m_iParticlesInUse = 0;
 
-  //Set the status of each particle to DEAD
   for (int i = 0; i < iNumParticles; i++)
   {
     m_pParticles[i].m_bIsAlive = false;
@@ -1226,25 +992,17 @@ bool CCCParticleSystem::Initialize(int iNumParticles)
 
   return true;
 
-
-  
 }
 
 
 void CCCParticleSystem::UpdateSystem(float timePassed)
 {
-  //We have to 
-  //  -update the particles (= move the particles, change their alpha, color, speed values)
-  //  -create new particles, if desired and there are "free" particles
-
-  //First get the number of particles we want to create (randomly in a certain dimension (dependent of m_CreationVariance)
   
   int iParticlesToCreate = (int) ((float)m_iParticlesCreatedPerSec
                        *timePassed
                                        *(1.0f+m_fCreationVariance*(RANDOM_FLOAT-0.5f)));
   
 
-  //loop through the particles and update / create them
   for (int i = 0; i < m_iMaxParticles; i++)
   {
     if (m_pParticles[i].m_bIsAlive)
@@ -1252,17 +1010,11 @@ void CCCParticleSystem::UpdateSystem(float timePassed)
       m_pParticles[i].Update(timePassed);
     }
 
-    //Should we create the particle?
     if (iParticlesToCreate > 0)
     {
       if (!m_pParticles[i].m_bIsAlive)
       {
-        m_pParticles[i].Initialize(this);
-        //Update the particle: This has an effect, as if the particle would have
-        //been emitted some milliseconds ago. This is very useful on slow PCs:
-        //Especially if you simulate something like rain, then you could see that 
-        //many particles are emitted at the same time (same "UpdateSystem" call),
-        //if you would not call this function:        
+        m_pParticles[i].Initialize(this); 
         m_pParticles[i].Update(RANDOM_FLOAT*timePassed);  
         iParticlesToCreate--;
       }
@@ -1286,45 +1038,32 @@ bool CCCParticleSystem::LoadTextureFromFile()
 
 void CCCParticleSystem::Render()
 {
-  //the calling method must switch on texturing!
-
   if (m_bUseTexture)
   {
     glBindTexture( GL_TEXTURE_2D, fire);
-   // m_Texture->SetActive();
-    //Calculate the "billboarding vectors" (the particles only store their positions, but we need quadrangles!)
     switch (m_iBillboarding)
     {
     case BILLBOARDING_NONE:
       {
-        //independent from camera / view direction
         m_BillboardedX = F3dVector(1.0f,0.0f,0.0f);
         m_BillboardedY = F3dVector(0.0f,1.0f,0.0f);
         break;
       }
     case BILLBOARDING_PERPTOVIEWDIR:
       {
-        //Retrieve the up and right vector from the modelview matrix:
         float fModelviewMatrix[16];
         glGetFloatv(GL_MODELVIEW_MATRIX, fModelviewMatrix);
 
-        //Assign the x-Vector for billboarding:
         m_BillboardedX = F3dVector(fModelviewMatrix[0], fModelviewMatrix[4], fModelviewMatrix[8]);
-
-        //Assign the y-Vector for billboarding:
         m_BillboardedY = F3dVector(fModelviewMatrix[1], fModelviewMatrix[5], fModelviewMatrix[9]);
         break;
       }
     case BILLBOARDING_PERPTOVIEWDIR_BUTVERTICAL:
       {
-        //Retrieve the right vector from the modelview matrix:
         float fModelviewMatrix[16];
         glGetFloatv(GL_MODELVIEW_MATRIX, fModelviewMatrix);
 
-        //Assign the x-Vector for billboarding:
         m_BillboardedX = F3dVector(fModelviewMatrix[0], fModelviewMatrix[4], fModelviewMatrix[8]);
-
-        //Assign the y-Vector:
         m_BillboardedY = F3dVector(0.0f,1.0f,0.0f);       
         break;
       }
@@ -1351,10 +1090,10 @@ void InitParticles()
 {
 
 //INIT SYSTEM 1 (POINTS, FIREWORK)
-  g_ParticleSystem1.Initialize(800);  //particle system must not have more than 800 particles
-  g_ParticleSystem1.m_iParticlesCreatedPerSec = 800;  //we create all particles in the first second of the system's life
-  g_ParticleSystem1.m_fMinDieAge = 2.5f;      //but the particles live longer than one second
-  g_ParticleSystem1.m_fMaxDieAge = 2.5f;      //-> this causes the system to "shoot" periodically
+  g_ParticleSystem1.Initialize(800);  
+  g_ParticleSystem1.m_iParticlesCreatedPerSec = 800;  
+  g_ParticleSystem1.m_fMinDieAge = 2.5f;      
+  g_ParticleSystem1.m_fMaxDieAge = 2.5f;      
     
   g_ParticleSystem1.m_fCreationVariance = 1.0f;
   g_ParticleSystem1.m_bRecreateWhenDied = true;
@@ -1413,7 +1152,7 @@ void CreatePool()
   
   NumOscillators = NUM_OSCILLATORS;
   Oscillators = new SOscillator[NumOscillators];
-  IndexVect.clear();  //to be sure it is empty
+  IndexVect.clear();  
   for (int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
     for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
     {
@@ -1428,7 +1167,6 @@ void CreatePool()
       Oscillators[xc+zc*NUM_X_OSCILLATORS].UpSpeed = 0;
       Oscillators[xc+zc*NUM_X_OSCILLATORS].bIsExciter = false;
 
-      //create two triangles:
       if ((xc < NUM_X_OSCILLATORS-1) && (zc < NUM_Z_OSCILLATORS-1))
       {
         IndexVect.push_back(xc+zc*NUM_X_OSCILLATORS);
@@ -1442,9 +1180,8 @@ void CreatePool()
 
     }
 
-  //copy the indices:
-  Indices = new GLuint[IndexVect.size()];  //allocate the required memory
-  for (int i = 0; i < IndexVect.size(); i++)
+  Indices = new GLuint[IndexVect.size()];  
+  for (unsigned int i = 0; i < IndexVect.size(); i++)
   {
     Indices[i] = IndexVect[i];
   }
@@ -1456,51 +1193,37 @@ void CreatePool()
   Oscillators[30+80*NUM_X_OSCILLATORS].ExciterAmplitude = 0.5f;
   Oscillators[30+80*NUM_X_OSCILLATORS].ExciterFrequency = 50.0f;
   NumIndices = IndexVect.size();
-  IndexVect.clear();  //no longer needed, takes only memory
+  IndexVect.clear();  
 }
 
 //water simulation--physicial simulation
-void UpdateScene(bool bEndIsFree, float deltaTime, float time)
+void UpdateScene(float deltaTime, float time)
 {
   for (int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
   {
     for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
     {
       int ArrayPos = xc+zc*NUM_X_OSCILLATORS;
-
-      //check, if oscillator is an exciter (these are not affected by other oscillators)
       if ((Oscillators[ArrayPos].bIsExciter) && g_bExcitersInUse)
       {
         Oscillators[ArrayPos].newY = Oscillators[ArrayPos].ExciterAmplitude*sin(time*Oscillators[ArrayPos].ExciterFrequency);
       }
-
-
-      //check, if this oscillator is on an edge (=>end)
-      if ((xc==0) || (xc==NUM_X_OSCILLATORS-1) || (zc==0) || (zc==NUM_Z_OSCILLATORS-1))
-        ;//TBD: calculating oscillators at the edge (if the end is free)
+      if ((xc==0) || (xc==NUM_X_OSCILLATORS-1) || (zc==0) || (zc==NUM_Z_OSCILLATORS-1));
       else
-      {
-        //calculate the new speed:
-        
-
-        //Change the speed (=accelerate) according to the oscillator's 4 direct neighbors:
+      { //change the y position according to this oscillators' neighbors
         float AvgDifference = Oscillators[ArrayPos-1].y       //left neighbor
                    +Oscillators[ArrayPos+1].y       //right neighbor
                    +Oscillators[ArrayPos-NUM_X_OSCILLATORS].y  //upper neighbor
                    +Oscillators[ArrayPos+NUM_X_OSCILLATORS].y  //lower neighbor
-                   -4*Oscillators[ArrayPos].y;        //subtract the pos of the current osc. 4 times  
+                   -4*Oscillators[ArrayPos].y;       
         Oscillators[ArrayPos].UpSpeed += AvgDifference*deltaTime/OSCILLATOR_WEIGHT;
 
-        //calculate the new position, but do not yet store it in "y" (this would affect the calculation of the other osc.s)
+        
         Oscillators[ArrayPos].newY += Oscillators[ArrayPos].UpSpeed*deltaTime;
-        
-        
-        
       }
     }   
   }
-
-  //copy the new position to y:
+  // update y position
   for ( int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
   {
     for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
@@ -1508,16 +1231,13 @@ void UpdateScene(bool bEndIsFree, float deltaTime, float time)
       Oscillators[xc+zc*NUM_X_OSCILLATORS].y =Oscillators[xc+zc*NUM_X_OSCILLATORS].newY;
     }
   }
-  //calculate new normal vectors (according to the oscillator's neighbors):
+
+  // calculate normal vector
   for ( int xc = 0; xc < NUM_X_OSCILLATORS; xc++) 
   {
     for (int zc = 0; zc < NUM_Z_OSCILLATORS; zc++) 
     {
-      ///
-      //Calculating the normal:
-    
-
-      SF3dVector u,v,p1,p2; //u and v are direction vectors. p1 / p2: temporary used (storing the points)
+      SF3dVector u,v,p1,p2;
 
       if (xc > 0) p1 = F3dVector(Oscillators[xc-1+zc*NUM_X_OSCILLATORS].x,
                      Oscillators[xc-1+zc*NUM_X_OSCILLATORS].y,
@@ -1562,6 +1282,7 @@ void UpdateScene(bool bEndIsFree, float deltaTime, float time)
   }
 
 }
+// draw the bird
 void drawBird(){
   float RGBA[] = {1,1,1,1};
   float Emission[]  = {0.0,0.0,0.01*40,1.0};
@@ -1582,8 +1303,7 @@ void DrawScene(void)
   glDrawElements( GL_TRIANGLES, //mode
             NumIndices,  //count, ie. how many indices
             GL_UNSIGNED_INT, //type of the index array
-            Indices);;
-  //drawBird();
+            Indices);
 
 }
 
@@ -2971,7 +2691,7 @@ void drawGate(){
    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
 
 
- glPushMatrix();
+ /*glPushMatrix();
    glTranslatef(8.0,0.55,0.1);
    //glRotatef(-45,0,1,0);
    glScalef(2.0,2.0,2.0);
@@ -2980,7 +2700,7 @@ void drawGate(){
    glBindTexture(GL_TEXTURE_2D,texture[12]);
    glutSolidTeapot(0.05);
    glDisable(GL_TEXTURE_2D);
-   glPopMatrix();
+   glPopMatrix();*/
 
 
 
@@ -3891,13 +3611,13 @@ void display()
    if (light)
    {
         //  Translate intensity to color vectors
-        float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
-        float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
-        float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
+        float Ambient[]   = {float(0.01*ambient) ,float(0.01*ambient) ,float(0.01*ambient) ,1.0};
+        float Diffuse[]   = {float(0.01*diffuse) ,float(0.01*diffuse) ,float(0.01*diffuse) ,1.0};
+        float Specular[]  = {float(0.01*specular),float(0.01*specular),float(0.01*specular),1.0};
         //  Light position
-        float Position[]  = {distance*Cos(zh_l)-7.0,ylight,distance*Sin(zh_l),1.0};
-        float Position_stick[]  = {Ex+0.5*Sin(zh),Ey-1.0+0.5*Sin(theta+10),Ez-0.5*Cos(zh),1.0};
-        float Position_bird[]  = {2*0.2*(0.5*Cos(zh_l)+4.0),2*0.2*(4.0-4.22), 2*0.2*(37.0+0.5*Sin(zh_l)),1,0};
+        float Position[]  = {float(distance*Cos(zh_l)-7.0),ylight,float(distance*Sin(zh_l)),1.0};
+        float Position_stick[]  = {float(Ex+0.5*Sin(zh)),float(Ey-1.0+0.5*Sin(theta+10)),float(Ez-0.5*Cos(zh)),1.0};
+        float Position_bird[]  = {float(2*0.2*(0.5*Cos(zh_l)+4.0)),float(2*0.2*(4.0-4.22)), float(2*0.2*(37.0+0.5*Sin(zh_l))),1,0};
         //float Position_fire[] = {2*Cos(zh_l)-7.0,ylight,2*Sin(zh_l),1.0};
         //  Draw light position as ball (still no lighting here)
         glColor3f(1,1,1);
@@ -3973,9 +3693,8 @@ void display()
 
 }
 
-//drawchair();
 
-//partical engine
+//partical engine --firework
 if(firework&&mode_project == 2){
   glPushMatrix();
  glTranslatef(Ex+10*Sin(zh)+13.8,Ey-1.0+50*Sin(theta+10)-7.0,Ez-10*Cos(zh)-0.0);
@@ -3993,6 +3712,7 @@ float zDist = Ez - g_ParticleSystem1.m_EmitterPosition.z;
   glPopMatrix();
 }
 
+//fire simulation
 glPushMatrix();
  glTranslatef(-7.0,0.0,0.5);
 clock_t iNowTime1 = clock();
@@ -4013,6 +3733,7 @@ g_ParticleSystem2.UpdateSystem(timePassed1);
   g_ParticleSystem4.Render();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
+
 
 
    //  Draw scene
@@ -4068,7 +3789,7 @@ glPushMatrix();
 
 
       if(bird){
-        float Position_bird[]  = {Cos(zh_l)+2.0,4.0, Sin(zh_l),1,0};
+        float Position_bird[]  = {float(Cos(zh_l)+2.0),4.0, float(Sin(zh_l)),1.0};
       glPushMatrix();
       //glRotatef(180,0,1,0);
       glTranslatef(27+Position_bird[0],Position_bird[1]-3.0,37+Position_bird[2]);
@@ -4260,6 +3981,10 @@ glPushMatrix();
 
       case Snitch:
         click_snitch =0;
+
+      case Teapot:
+        click_teapot = 0;
+        //MessageBox(NULL, "The Sun!", "Click", 0);
       default:
       break;
 
@@ -4268,7 +3993,7 @@ glPushMatrix();
 
     if(click_ball ==0){
       if(hit == 1){
-      float Position_ball[]  = {5*Cos(zh_l)+2.0,4.0,5*Sin(zh_l),1.0};
+      float Position_ball[]  = {float(5*Cos(zh_l)+2.0),4.0,float(5*Sin(zh_l)),1.0};
       
       glPushMatrix();
 
@@ -4280,7 +4005,7 @@ glPushMatrix();
     }
       else{
         //start = clock();
-        float Position_ball[]  = {8*t_bat*2*Cos(zh_bat)/(8*Sin(zh_bat)*Cos(zh)+3.0)-3.0,8*t_bat*2*Cos(zh_bat)/(8*Sin(zh_bat)*Sin(zh)-4.0)+4.0,t_bat*2};
+        float Position_ball[]  = {float(8*t_bat*2*Cos(zh_bat)/(8*Sin(zh_bat)*Cos(zh)+3.0)-3.0),float(8*t_bat*2*Cos(zh_bat)/(8*Sin(zh_bat)*Sin(zh)-4.0)+4.0),float(t_bat*2)};
       
       glPushMatrix();
 
@@ -4304,7 +4029,7 @@ glPushMatrix();
     }
 
     if(click_snitch ==0){
-      float Position_ball[]  = {10*Cos(zh_l)+2.0,4.0,10*Sin(zh_l),1.0};
+      float Position_ball[]  = {float(10*Cos(zh_l)+2.0),4.0,float(10*Sin(zh_l)),1.0};
       
       glPushMatrix();
       //glRotatef(90,0,0,1);
@@ -4314,6 +4039,18 @@ glPushMatrix();
       glPopMatrix();
     }
 
+    if(click_teapot ==0){
+      glPushMatrix();                   
+      glTranslatef(7,0.75+0.5*50*Sin(theta),0.1);
+      glScalef(teapot_size,teapot_size,teapot_size);
+      glEnable(GL_TEXTURE_2D);
+      glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+      glBindTexture(GL_TEXTURE_2D,texture[12]);
+      glutSolidTeapot(0.05);
+      glDisable(GL_TEXTURE_2D);
+   
+  glPopMatrix();
+    }
    
    
    //  Draw axes - no lighting from here on
@@ -4375,7 +4112,7 @@ void idle()
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    zh_l= fmod(90*t,360.0);
-   float dtime = 0.004f;  //if you want to be exact, you would have to replace this by the real time passed since the last frame (and probably divide it by a certain number)
+   float dtime = 0.004f;  
   g_timePassedSinceStart += dtime;
 
   if (g_timePassedSinceStart > 1.7f)
@@ -4384,7 +4121,7 @@ void idle()
 }
 
 
-  UpdateScene(false,dtime,g_timePassedSinceStart);
+  UpdateScene(dtime,g_timePassedSinceStart);
  // Display();
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
@@ -4498,9 +4235,11 @@ void key(unsigned char ch,int x,int y)
       firework = 1-firework;
       Ex = 10;
       Ez = -5;
+      Ey = 0.0;
       theta = 5;
       zh = -90;
       stick_light = firework;
+      click_teapot = 1;
     }
 
    //  Move light
@@ -4509,10 +4248,16 @@ void key(unsigned char ch,int x,int y)
    else if (ch == '>')
       zh_l -= 1;
    //  Change field of view angle
-   else if (ch == '-' && ch>1)
+   else if (ch == '-' && ch>1 && click_teapot == 1)
       fov--;
-   else if (ch == '+' && ch<179)
+   else if (ch == '+' && ch<179 && click_teapot == 1)
       fov++;
+   // change the size of the teapot
+   else if (ch == '-' && ch>1 && click_teapot == 0)
+      teapot_size-=0.2;
+   else if (ch == '+' && ch<179 && click_teapot == 0)
+      teapot_size+=0.2;
+
    //  Light elevation
    else if (ch=='[')
       ylight -= 0.1;
@@ -4565,9 +4310,11 @@ void key(unsigned char ch,int x,int y)
 
       Ex = -8;
       Ez = -11;
+      Ey = 0.0;
       zh = 180;
       theta = 0;
       firework = 0;
+      click_teapot = 1;
 
     }
    else if ((ch == 'w' || ch == 'W') && mode_project==2){
@@ -4577,6 +4324,7 @@ void key(unsigned char ch,int x,int y)
       Ey = -0.1;
       theta = 0;
       firework = 0;
+      click_teapot = 1;
   }
   else if(ch == 'c' || ch == 'C')
     move_light = 1- move_light;
@@ -4592,6 +4340,8 @@ void key(unsigned char ch,int x,int y)
     click_broom = 1;
     click_bat = 1;
     click_ball = 1;
+    click_snitch = 1;
+    click_teapot = 1;
   
   
       //  Translate shininess power to value (-1 => 0)
@@ -4673,13 +4423,10 @@ int main(int argc,char* argv[])
   glPointSize(2.0);
   glClearColor(0.0,0.0,0.0,0.0);
 
-
-  glFrontFace(GL_CCW);   //Tell OGL which orientation shall be the front face
   glShadeModel(GL_SMOOTH);
 
   //initialize generation of random numbers:
   srand((unsigned)time(NULL));
-  //InitParticles();
    
 
    //  Set callbacks
